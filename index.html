@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#C9B6F0">
   <title>Urban Huddle EP</title>
-  </head>
-  <body>
   
   <style>
     @font-face {
@@ -82,7 +80,7 @@
       object-fit: contain;
     }
 
-    #score-display {
+    #score-display (Hidden by default, shown when playing) {
       font-size: 1.1rem;
       font-weight: bold;
       color: var(--text-color);
@@ -247,9 +245,15 @@ const firebaseConfig = {
 
     <div id="canvas-wrapper">
       <canvas id="rhythm-canvas"></canvas>
-
-
-  <!-- ============ COUNTDOWN ============ -->
+      
+      <!-- Main Menu -->
+      <div id="start-menu" class="overlay-screen">
+        <h1 style="color:#111; margin-bottom: 30px; font-size: 2.2rem;">RHYTHM</h1>
+        <button class="menu-btn" onclick="startGame()">PLAY</button>
+        <button class="menu-btn" onclick="openLeaderboard()">SCORES</button>
+      </div>
+      
+      <!-- ============ COUNTDOWN ============ -->
   <section id="countdownScreen" class="screen">
     <div id="countdownNum">3</div>
   </section>
