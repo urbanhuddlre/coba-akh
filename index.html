@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Vertical Mobile Rhythm Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#C9B6F0">
+  <title>Urban Huddle EP</title>
+  </head>
+  <body>
   
   <style>
     @font-face {
@@ -15,11 +18,11 @@
 
     :root {
       --bg-color: #ffffff;
-      --text-color: #111111;
-      --lane-color-0: #ff2a6d;
-      --lane-color-1: #05d9e8;
-      --lane-color-2: #ffb800;
-      --lane-color-3: #00ff66;
+      --text-color: #ffee9b;
+      --lane-color-0: #3546ff;
+      --lane-color-1: #adc642;
+      --lane-color-2: #e95500;
+      --lane-color-3: #3545ee;
       --ui-accent: #111111;
     }
 
@@ -236,7 +239,7 @@
   <div id="game-container">
     <div id="header">
       <div id="logo-container">
-        <img id="game-logo" src="assets/logo.png" alt="Logo" onerror="this.style.display='none'">
+        <assets/logo.png alt="Logo" onerror="this.style.display='none'">
       </div>
       <span id="score-display">SCORE: 0</span>
     </div>
@@ -244,13 +247,26 @@
     <div id="canvas-wrapper">
       <canvas id="rhythm-canvas"></canvas>
 
-      <!-- Main Menu -->
-      <div id="start-menu" class="overlay-screen">
-        <h1 style="color:#111; margin-bottom: 30px; font-size: 2.2rem;">RHYTHM</h1>
-        <button class="menu-btn" onclick="startGame()">PLAY</button>
-        <button class="menu-btn" onclick="openLeaderboard()">SCORES</button>
-      </div>
+  <!-- Main Menu -->
+  <section id="menuScreen" class="screen active">
+    <div class="menuCard">
+      <img id="logoImg" class="logoImage" src="assets/logo.png" alt="Logo"
+           onerror="this.style.display='none'; document.getElementById('titleFallback').style.display='block';">
+      <h1 id="titleFallback" class="titleText" style="display:none;">logo.png</h1>
+      <p class="subtitle">injak gasnya mpruy</p>
 
+      <div id="songStatus" class="songStatus">Loading...…</div>
+
+      <button id="startBtn" class="bigBtn" disabled>PLAY</button>
+      <button id="viewLeaderboardBtn" class="ghostBtn">Leaderboard</button>
+    </div>
+  </section>
+
+  <!-- ============ COUNTDOWN ============ -->
+  <section id="countdownScreen" class="screen">
+    <div id="countdownNum">3</div>
+  </section>
+      
       <!-- Leaderboard Screen -->
       <div id="leaderboard-menu" class="overlay-screen hidden">
         <h2>TOP SCORES</h2>
