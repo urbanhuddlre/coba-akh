@@ -10,6 +10,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
+        @font-face {
+    font-family: 'Hillios';
+    src: url('hillios.otf'); /* Ganti menjadi hillios.otf jika formatnya OTF */
+}
         :root {
             --accent-color: #e95500;
             --bg-color: #f6f6f9;
@@ -32,37 +36,43 @@
             color: var(--text-color);
             width: 100vw;
             height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             overflow: hidden;
         }
 
         #game-container {
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            max-width: 480px; /* Lebar maksimal agar pas di HP maupun PC */
+            height: 100%;
+            max-height: 100vh;
             background: #ffffff;
-            position: absolute;
-            top: 0;
-            left: 0;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
-        
-       /* LOGO STYLING */
+
+        /* PERBAIKAN UKURAN LOGO AGAR TIDAK RAKSASA */
         .game-logo {
-            width: 100px;         /* Lebar maksimum logo utama */
-            height: 80px;         /* Tinggi tetap agar tidak gepeng/kegedean */
-            object-fit: contain;  /* Menjaga rasio gambar tetap proporsional */
+            width: 120px !important;
+            height: auto !important;
+            max-height: 120px !important;
+            object-fit: contain;
             margin-bottom: 15px;
-            filter: drop-shadow(0 4px 10px rgba(255, 94, 151, 0.3));
         }
 
         .result-logo {
-            width: 60px;          /* Lebar logo di layar game over */
-            height: 50px;         /* Tinggi tetap logo game over */
+            width: 70px !important;
+            height: auto !important;
+            max-height: 70px !important;
             object-fit: contain;
             margin-bottom: 10px;
         }
 
+        
         /* UI SCREENS */
         #main-menu, #result-screen, #leaderboard-modal {
             position: absolute;
@@ -258,7 +268,7 @@
         <div class="logo-wrapper">
             <img src="logo.png" alt="Logo Game" class="logo.png">
         </div>
-        <h1 style="color: var(--accent-color); font-size: 32px; margin-bottom: 30px;">TUH EP</h1>
+        <h1 style="font-family: 'Hillios', sans-serif; color: var(--accent-color); font-size: 36px; margin-bottom: 25px; margin-top: 0;">TUH EP</h1>
         <button class="btn" onclick="startGame()">PLAY GAME</button>
         <button class="btn" style="background:#eee; color:#555;" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
     </div>
