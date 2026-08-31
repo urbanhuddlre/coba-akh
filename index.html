@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>TUH EP</title>
     <style>
+        /* Pembungkus logo agar ukurannya teratur */
+.logo-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Kunci ukuran gambar logo */
+.custom-logo-img {
+    width: 160px !important;       /* Paksa lebar ke 160px */
+    max-width: 50vw !important;    /* Maksimal setengah lebar layar HP */
+    height: auto !important;       /* Tinggi menyesuaikan proporsi */
+    max-height: 160px !important;  /* Mencegah logo memanjang ke bawah */
+    object-fit: contain !important;
+    display: block !important;
+}
         :root {
             --bg-color: #ffffff;
             --accent-color: #e95500;
@@ -202,11 +220,13 @@
 
     <!-- MENU UTAMA -->
     <div id="main-menu">
-        <img src="logo.png" alt="Logo Game" class="logo.png">
-        <button class="btn" onclick="startGame()">PLAY</button>
-        <button class="btn btn-secondary" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
+    <div class="logo-wrapper">
+        <img src="logo.png" alt="Logo Game" class="custom-logo-img">
     </div>
-
+    <button class="btn" onclick="startGame()">PLAY</button>
+    <button class="btn btn-secondary" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
+</div>
+    
     <!-- GLOBAL LEADERBOARD -->
     <div id="leaderboard-modal">
         <h2>Global Leaderboard</h2>
