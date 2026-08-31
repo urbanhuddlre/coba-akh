@@ -185,14 +185,15 @@
     import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyD8sLyanphP9Y2ZY8MWmDpsBBOcCegMW08",
+  authDomain: "urbanhudlde.firebaseapp.com",
+  projectId: "urbanhudlde",
+  storageBucket: "urbanhudlde.firebasestorage.app",
+  messagingSenderId: "992493553966",
+  appId: "1:992493553966:web:1d63de121b27e11d8092bf",
+  measurementId: "G-CN72ZM0269"
+};
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
