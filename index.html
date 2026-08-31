@@ -49,6 +49,22 @@
             overflow: hidden;
         }
 
+        /* LOGO STYLING */
+        .game-logo {
+            width: 140px;
+            height: auto;
+            max-height: 140px;
+            object-fit: contain;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 4px 10px rgba(255, 94, 151, 0.3));
+        }
+
+        .result-logo {
+            width: 80px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
         /* UI SCREENS */
         #main-menu, #result-screen, #leaderboard-modal {
             position: absolute;
@@ -237,10 +253,13 @@
 <div id="game-container">
 
     <!-- AUDIO BGM -->
-    <audio id="bgm" src="song.mp3" preload="auto"></audio>
+    <audio id="bgm" src="music.mp3" preload="auto"></audio>
 
     <!-- 1. MAIN MENU -->
     <div id="main-menu">
+        <div class="logo-wrapper">
+            <img src="logo.png" alt="Logo Game" class="logo.png">
+        </div>
         <h1 style="color: var(--accent-color); font-size: 32px; margin-bottom: 30px;">TUH EP</h1>
         <button class="btn" onclick="startGame()">PLAY GAME</button>
         <button class="btn" style="background:#eee; color:#555;" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
