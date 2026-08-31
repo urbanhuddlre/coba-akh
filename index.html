@@ -293,13 +293,15 @@
 </div>
 
 <script>
-// --- INSIALISASI FIREBASE (Ganti Config Ini jika ada) ---
 const firebaseConfig = {
-    databaseURL: "https://YOUR_DATABASE_NAME.firebaseio.com"
-};
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
 
 // --- VARIABEL GAME ---
 let score = 0;
