@@ -237,10 +237,6 @@
         </div>
     </div>
 
-    <!-- SDK Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
     <script>
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
@@ -316,26 +312,28 @@
         }
 
         function startGame() {
-            // Pindah layar terlebih dahulu secara instan
-            document.getElementById('main-menu').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'block';
-            
-            score = 0;
-            combo = 0;
-            isPlaying = true;
-            beatmapData.forEach(note => note.spawned = false);
-            updateHUD();
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'block';
+    
+    score = 0;
+    combo = 0;
+    isPlaying = true;
+    beatmapData.forEach(note => note.spawned = false);
+    updateHUD();
 
-            // Putar Audio
-            bgm.currentTime = 0;
-            bgm.play().then(() => {
-                requestAnimationFrame(gameLoop);
-            }).catch(error => {
-                console.log("Audio tidak ditemukan atau terblokir. Game tetap jalan tanpa musik.");
-                requestAnimationFrame(gameLoop);
-            });
-        }
-
+    // Pemutaran audio yang aman dari error
+    bgm.currentTime = 0;
+    var playPromise = bgm.play();
+    
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            requestAnimationFrame(gameLoop);
+        }).catch(error => {
+            console.warn("Audio tidak dapat diputar otomatis, game tetap berjalan:", error);
+            requestAnimationFrame(gameLoop);
+        });
+    }
+}
         function gameLoop() {
             if (!isPlaying) return;
 
