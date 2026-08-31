@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>TUH EP</title>
+    <title>Gen-Z Rhythm Game</title>
     <style>
-                :root {
+        :root {
             --bg-color: #ffffff;
             --accent-color: #e95500;
             --lane-color: #ffee9b;
@@ -28,57 +28,60 @@
             overflow: hidden;
         }
 
-        /* MENU UTAMA */
-       #main-menu {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    gap: 16px;
-    padding: 20px;
-    margin: 0 auto;
-    max-width: 400px;
-    position: relative;
-    z-index: 1;
-}
+        #main-menu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            gap: 16px;
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 400px;
+            position: relative;
+            z-index: 1;
+        }
 
-.logo-wrapper {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-    pointer-events: none; /* Mencegah logo menghalangi klik ke tombol di sekitarnya */
-}
+        .logo-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            pointer-events: none;
+        }
 
-.custom-logo-img {
-    width: 160px !important;
-    max-width: 50vw !important;
-    height: auto !important;
-    max-height: 160px !important;
-    object-fit: contain !important;
-    display: block !important;
-    pointer-events: none; /* Logo tidak akan merespons atau menghalangi klik */
-}
+        .custom-logo-img {
+            width: 160px !important;
+            max-width: 50vw !important;
+            height: auto !important;
+            max-height: 160px !important;
+            object-fit: contain !important;
+            display: block !important;
+            pointer-events: none;
+        }
 
-.btn {
-    width: 200px;
-    padding: 16px;
-    border: none;
-    border-radius: 30px;
-    background: var(--text-color);
-    color: #fff;
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-    cursor: pointer;
-    position: relative;
-    z-index: 10; /* Memastikan tombol selalu berada di lapisan paling atas */
-}
+        .btn {
+            width: 200px;
+            padding: 16px;
+            border: none;
+            border-radius: 30px;
+            background: var(--text-color);
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            position: relative;
+            z-index: 10;
+        }
 
-        /* LEADERBOARD MODAL */
+        .btn-secondary {
+            background: #f0f0f5;
+            color: var(--text-color);
+        }
+
         #leaderboard-modal {
             display: none;
             position: absolute;
@@ -107,7 +110,6 @@
             font-weight: 600;
         }
 
-        /* IN-GAME DISPLAY */
         #game-screen {
             display: none;
             width: 100%;
@@ -139,7 +141,6 @@
             z-index: 10;
         }
 
-        /* LANES & HEART KEYS */
         .lanes-container {
             display: flex;
             justify-content: center;
@@ -186,7 +187,6 @@
         .heart-key::before { top: -25px; left: 0; }
         .heart-key::after { left: 25px; top: 0; }
 
-        /* ANIMASI NOTE JATUH */
         .note {
             width: 45px;
             height: 45px;
@@ -208,27 +208,20 @@
 </head>
 <body>
 
-    <!-- MENU UTAMA -->
     <div id="main-menu">
-    <div class="logo-wrapper">
-        <img src="logo.png" alt="Logo Game" class="custom-logo-img">
+        <div class="logo-wrapper">
+            <img src="logo.png" alt="Logo Game" class="custom-logo-img">
+        </div>
+        <button class="btn" onclick="startGame()">PLAY</button>
+        <button class="btn btn-secondary" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
     </div>
-    <button class="btn" onclick="startGame()">PLAY</button>
-    <button class="btn btn-secondary" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
-</div>
-    
-    <!-- GLOBAL LEADERBOARD -->
+
     <div id="leaderboard-modal">
         <h2>Global Leaderboard</h2>
-        <div class="lb-list">
-            <div class="lb-item"><span>1. GenZ_King</span><span>985,000</span></div>
-            <div class="lb-item"><span>2. Aesthetic2004</span><span>942,100</span></div>
-            <div class="lb-item"><span>3. RhythmGod</span><span>910,500</span></div>
-        </div>
+        <div class="lb-list"></div>
         <button class="btn btn-secondary" style="margin-top: 20px;" onclick="toggleLeaderboard(false)">CLOSE</button>
     </div>
 
-    <!-- IN-GAME SCREEN -->
     <div id="game-screen">
         <div id="hud">
             <span id="score-display">000000</span>
@@ -244,46 +237,102 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LANGSUNG DI DALAM FILE HTML (TANPA SCRIPT.JS) -->
-    <script>
-        // Inisialisasi Audio (Pastikan file music.mp3 ada di folder yang sama)
-        const bgm = new Audio('music.mp3');
+    <!-- SDK Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
+    <script>
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+        } catch (e) {
+            console.log("Firebase belum diisi konfigurasi aslinya.");
+        }
+
+        const bgm = new Audio('music.mp3');
         let score = 0;
         let combo = 0;
         let isPlaying = false;
-        let beatmapData = [];
+        
+        // Fallback beatmap bawaan jika beatmap.json gagal di-load
+        let beatmapData = [
+            { "timestamp": 1000, "lane": 0 },
+            { "timestamp": 1500, "lane": 1 },
+            { "timestamp": 2000, "lane": 2 },
+            { "timestamp": 2500, "lane": 3 },
+            { "timestamp": 3000, "lane": 1 },
+            { "timestamp": 3500, "lane": 2 }
+        ];
 
-        // Memuat file beatmap.json secara langsung
+        // Memuat file JSON jika ada
         fetch('beatmap.json')
             .then(res => res.json())
-            .then(data => { 
-                beatmapData = data.beatmap; 
-            })
-            .catch(err => console.log("Catatan: Pastikan jalankan lewat Live Server agar fetch JSON terbaca."));
+            .then(data => { beatmapData = data.beatmap; })
+            .catch(err => console.log("Memakai beatmap cadangan (karena dibuka tanpa Live Server / file json tidak ada)."));
 
         function toggleLeaderboard(show) {
             document.getElementById('leaderboard-modal').style.display = show ? 'flex' : 'none';
+            if (show) loadLeaderboard();
+        }
+
+        function loadLeaderboard() {
+            const lbContainer = document.querySelector('.lb-list');
+            lbContainer.innerHTML = '<p style="text-align:center;">Loading...</p>';
+
+            try {
+                firebase.database().ref('leaderboard')
+                  .orderByChild('score')
+                  .limitToLast(10)
+                  .on('value', (snapshot) => {
+                      lbContainer.innerHTML = '';
+                      let players = [];
+                      snapshot.forEach((childSnapshot) => { players.push(childSnapshot.val()); });
+                      players.reverse();
+
+                      if (players.length === 0) {
+                          lbContainer.innerHTML = '<p style="text-align:center;">Belum ada skor.</p>';
+                          return;
+                      }
+
+                      players.forEach((player, index) => {
+                          const item = document.createElement('div');
+                          item.className = 'lb-item';
+                          item.innerHTML = `<span>${index + 1}. ${player.username}</span><span>${player.score.toLocaleString()}</span>`;
+                          lbContainer.appendChild(item);
+                      });
+                  });
+            } catch (err) {
+                lbContainer.innerHTML = '<p style="text-align:center;">Firebase belum terhubung.</p>';
+            }
         }
 
         function startGame() {
-            // Reset status note agar bisa dimainkan ulang dari awal
-            beatmapData.forEach(note => note.spawned = false);
-
+            // Pindah layar terlebih dahulu secara instan
             document.getElementById('main-menu').style.display = 'none';
             document.getElementById('game-screen').style.display = 'block';
             
             score = 0;
             combo = 0;
             isPlaying = true;
+            beatmapData.forEach(note => note.spawned = false);
             updateHUD();
 
-            // Putar musik saat tombol play ditekan
+            // Putar Audio
             bgm.currentTime = 0;
             bgm.play().then(() => {
                 requestAnimationFrame(gameLoop);
             }).catch(error => {
-                alert("Gagal memutar audio! Pastikan file 'music.mp3' ada di folder yang sama.");
+                console.log("Audio tidak ditemukan atau terblokir. Game tetap jalan tanpa musik.");
+                requestAnimationFrame(gameLoop);
             });
         }
 
@@ -291,8 +340,6 @@
             if (!isPlaying) return;
 
             const currentTimeMs = bgm.currentTime * 1000;
-
-            // Memunculkan note 1 detik sebelum timestamp lagunya tiba
             beatmapData.forEach((note) => {
                 if (!note.spawned && currentTimeMs >= (note.timestamp - 1000)) { 
                     spawnNote(note);
@@ -315,15 +362,25 @@
             noteEl.className = 'note';
             laneElement.appendChild(noteEl);
 
-            // Hapus elemen note otomatis setelah animasi jatuh selesai (1 detik)
-            setTimeout(() => {
-                noteEl.remove();
-            }, 1000);
+            setTimeout(() => { noteEl.remove(); }, 1000);
         }
 
         function endGame() {
             isPlaying = false;
-            alert(`Game Selesai! Skor Akhir Anda: ${score}`);
+            const username = prompt(`Game Over! Skor Anda: ${score}\nMasukkan Nama/Username Anda:`) || "Anonymous";
+
+            try {
+                firebase.database().ref('leaderboard').push({
+                    username: username,
+                    score: score,
+                    timestamp: Date.now()
+                }).then(() => {
+                    toggleLeaderboard(true);
+                });
+            } catch(e) {
+                toggleLeaderboard(true);
+            }
+
             document.getElementById('main-menu').style.display = 'flex';
             document.getElementById('game-screen').style.display = 'none';
         }
@@ -364,198 +421,6 @@
             updateHUD();
             setTimeout(() => { el.style.opacity = '0'; }, 300);
         }
-        
-    // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyD8sLyanphP9Y2ZY8MWmDpsBBOcCegMW08",
-  authDomain: "urbanhudlde.firebaseapp.com",
-  projectId: "urbanhudlde",
-  storageBucket: "urbanhudlde.firebasestorage.app",
-  messagingSenderId: "992493553966",
-  appId: "1:992493553966:web:7440d47c1797356c8092bf",
-  measurementId: "G-K3NS4CWZHR"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-// Inisialisasi Firebase & Database
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-const bgm = new Audio('music.mp3');
-let score = 0;
-let combo = 0;
-let isPlaying = false;
-let beatmapData = [];
-
-// 2. Fungsi Mengambil Data Leaderboard Real-time dari Firebase
-function loadLeaderboard() {
-    const lbContainer = document.querySelector('.lb-list');
-    lbContainer.innerHTML = '<p style="text-align:center;">Loading...</p>';
-
-    // Ambil Top 10 Skor Tertinggi
-    db.ref('leaderboard')
-      .orderByChild('score')
-      .limitToLast(10)
-      .on('value', (snapshot) => {
-          lbContainer.innerHTML = '';
-          let players = [];
-
-          snapshot.forEach((childSnapshot) => {
-              players.push(childSnapshot.val());
-          });
-
-          // Urutkan dari skor terbesar ke terkecil
-          players.reverse();
-
-          if (players.length === 0) {
-              lbContainer.innerHTML = '<p style="text-align:center;">Belum ada skor.</p>';
-              return;
-          }
-
-          players.forEach((player, index) => {
-              const item = document.createElement('div');
-              item.className = 'lb-item';
-              item.innerHTML = `<span>${index + 1}. ${player.username}</span><span>${player.score.toLocaleString()}</span>`;
-              lbContainer.appendChild(item);
-          });
-      });
-}
-
-function toggleLeaderboard(show) {
-    document.getElementById('leaderboard-modal').style.display = show ? 'flex' : 'none';
-    if (show) loadLeaderboard(); // Muat data dari server saat modal dibuka
-}
-
-function startGame() {
-    beatmapData.forEach(note => note.spawned = false);
-    document.getElementById('main-menu').style.display = 'none';
-    document.getElementById('game-screen').style.display = 'block';
-    
-    score = 0;
-    combo = 0;
-    isPlaying = true;
-    updateHUD();
-
-    bgm.currentTime = 0;
-    bgm.play().then(() => {
-        requestAnimationFrame(gameLoop);
-    });
-}
-
-function gameLoop() {
-    if (!isPlaying) return;
-
-    const currentTimeMs = bgm.currentTime * 1000;
-    beatmapData.forEach((note) => {
-        if (!note.spawned && currentTimeMs >= (note.timestamp - 1000)) { 
-            spawnNote(note);
-            note.spawned = true; 
-        }
-    });
-
-    if (bgm.ended) {
-        endGame();
-    } else {
-        requestAnimationFrame(gameLoop);
-    }
-}
-
-function spawnNote(noteData) {
-    const laneElement = document.getElementById(`lane-${noteData.lane}`);
-    if (!laneElement) return;
-
-    const noteEl = document.createElement('div');
-    noteEl.className = 'note';
-    laneElement.appendChild(noteEl);
-
-    setTimeout(() => { noteEl.remove(); }, 1000);
-}
-
-// 3. Fungsi Menyimpan Skor ke Firebase saat Game Selesai
-function endGame() {
-    isPlaying = false;
-    
-    // Minta masukan Username Gen-Z pemain
-    setTimeout(() => {
-        const username = prompt(`Game Over! Skor Anda: ${score}\nMasukkan Nama/Username Anda:`) || "Anonymous";
-
-        // Simpan data ke Firebase Database
-        db.ref('leaderboard').push({
-            username: username,
-            score: score,
-            timestamp: Date.now()
-        }).then(() => {
-            toggleLeaderboard(true); // Buka leaderboard setelah upload
-        });
-
-        document.getElementById('main-menu').style.display = 'flex';
-        document.getElementById('game-screen').style.display = 'none';
-    }, 500);
-}
-
-function updateHUD() {
-    document.getElementById('score-display').innerText = score.toString().padStart(6, '0');
-    document.getElementById('combo-display').innerText = combo + 'x';
-}
-
-function hitLane(laneIndex) {
-    if (!isPlaying) return;
-
-    const judgments = ['PERFECT', 'GOOD', 'MISS'];
-    const rand = Math.random();
-    let result = rand < 0.6 ? 'PERFECT' : (rand < 0.9 ? 'GOOD' : 'MISS');
-
-    triggerJudgment(result);
-}
-
-function triggerJudgment(type) {
-    const el = document.getElementById('judgment-text');
-    el.innerText = type;
-    el.style.opacity = '1';
-    
-    if (type === 'PERFECT') {
-        el.style.color = '#ff5e97';
-        score += 1000;
-        combo++;
-    } else if (type === 'GOOD') {
-        el.style.color = '#ffb800';
-        score += 500;
-        combo++;
-    } else {
-        el.style.color = '#888888';
-        combo = 0;
-    }
-
-    updateHUD();
-    setTimeout(() => { el.style.opacity = '0'; }, 300);
-}
-
-// Pre-fetch Beatmap
-fetch('beatmap.json')
-    .then(res => res.json())
-    .then(data => { beatmapData = data.beatmap; });
-        <!-- KODE ELEMEN HTML GAME DI ATAS -->
-
-    <!-- 1. SDK Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-    <!-- 2. Logic Utama Game + Firebase (Satu script saja) -->
-    <script>
-        // Seluruh logika game, pemutar audio, beatmap, dan leaderboard masuk di sini...
     </script>
-
-</body>
-</html>
 </body>
 </html>
