@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Gen-Z Rhythm Game</title>
+    <title>Urban Huddle EP</title>
     <style>
         :root {
             --bg-color: #ffffff;
-            --accent-color: #ff5e97;
-            --lane-color: #f0f0f5;
-            --text-color: #1a1a1a;
+            --accent-color: #e95500;
+            --lane-color: #ffee9b;
+            --text-color: #adc642;
         }
 
         * {
@@ -38,18 +38,13 @@
             gap: 20px;
         }
 
-        .logo-placeholder {
+        /* STYLING LOGO CUSTOM */
+        .custom-logo-img {
             width: 180px;
-            height: 180px;
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%);
-            border-radius: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 25px rgba(255, 94, 151, 0.3);
-            font-weight: 900;
-            color: #fff;
-            font-size: 24px;
+            height: auto;
+            max-height: 180px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 15px rgba(255, 94, 151, 0.3));
         }
 
         .btn {
@@ -81,6 +76,7 @@
             flex-direction: column;
             align-items: center;
             padding: 40px 20px;
+            z-index: 100;
         }
 
         .lb-list {
@@ -135,7 +131,7 @@
         .lanes-container {
             display: flex;
             justify-content: center;
-            gap: 15px; /* Jarak antar lane */
+            gap: 15px;
             width: 100%;
             height: 100%;
             padding: 0 10px;
@@ -175,23 +171,15 @@
 
         .heart-key::before { top: -25px; left: 0; }
         .heart-key::after { left: 25px; top: 0; }
-
-        .note {
-            width: 45px;
-            height: 45px;
-            background: var(--text-color);
-            border-radius: 50%;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-        }
     </style>
 </head>
 <body>
 
     <!-- MENU UTAMA -->
     <div id="main-menu">
-        <div class="logo-placeholder" id="custom-logo">YOUR LOGO</div>
+        <!-- LOGO KUSTOM ANDA DI SINI -->
+        <img src="logo.png" alt="Logo Game" class="custom-logo-img">
+        
         <button class="btn" onclick="startGame()">PLAY</button>
         <button class="btn btn-secondary" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
     </div>
@@ -216,130 +204,103 @@
         <div id="judgment-text">PERFECT</div>
 
         <div class="lanes-container">
-            <div class="lane" id="lane-0" touchstart="hitLane(0)"><div class="heart-key"></div></div>
-            <div class="lane" id="lane-1" touchstart="hitLane(1)"><div class="heart-key"></div></div>
-            <div class="lane" id="lane-2" touchstart="hitLane(2)"><div class="heart-key"></div></div>
-            <div class="lane" id="lane-3" touchstart="hitLane(3)"><div class="heart-key"></div></div>
+            <div class="lane" id="lane-0" ontouchstart="hitLane(0)" onclick="hitLane(0)"><div class="heart-key"></div></div>
+            <div class="lane" id="lane-1" ontouchstart="hitLane(1)" onclick="hitLane(1)"><div class="heart-key"></div></div>
+            <div class="lane" id="lane-2" ontouchstart="hitLane(2)" onclick="hitLane(2)"><div class="heart-key"></div></div>
+            <div class="lane" id="lane-3" ontouchstart="hitLane(3)" onclick="hitLane(3)"><div class="heart-key"></div></div>
         </div>
     </div>
 
     <script>
-        // 1. Inisialisasi Audio
-const bgm = new Audio('music.mp3'); // assets/song.mp3
+        // Inisialisasi Audio
+        const bgm = new Audio('music.mp3');
 
-let score = 0;
-let combo = 0;
-let isPlaying = false;
-let beatmapData = [];
+        let score = 0;
+        let combo = 0;
+        let isPlaying = false;
+        let beatmapData = [];
 
-// 2. Load File Beatmap JSON
-fetch('beatmap.json')
-    .then(response => response.json())
-    .then(data => {
-        beatmapData = data.beatmap;
-    })
-    .catch(err => console.error("Gagal memuat beatmap:", err));
+        // Load Beatmap
+        fetch('beatmap.json')
+            .then(res => res.json())
+            .then(data => { beatmapData = data.beatmap; })
+            .catch(err => console.log("Catatan: Beatmap file belum ditemukan atau dibuka tanpa Live Server."));
 
-function toggleLeaderboard(show) {
-    document.getElementById('leaderboard-modal').style.display = show ? 'flex' : 'none';
-}
-
-function startGame() {
-    // Sembunyikan Menu & Tampilkan Game Screen
-    document.getElementById('main-menu').style.display = 'none';
-    document.getElementById('game-screen').style.display = 'block';
-    
-    // Reset State Game
-    score = 0;
-    combo = 0;
-    isPlaying = true;
-    updateHUD();
-
-    // 3. Putar Musik & Game Loop (Sesuai Aturan Touch iOS/Android)
-    bgm.currentTime = 0;
-    bgm.play().then(() => {
-        requestAnimationFrame(gameLoop);
-    }).catch(error => {
-        console.log("Gagal memutar audio:", error);
-    });
-}
-
-// 4. Synchronization Loop (Mencocokkan Waktu Lagu dengan Beatmap)
-function gameLoop() {
-    if (!isPlaying) return;
-
-    // Ambil posisi waktu audio dalam milidetik (ms)
-    const currentTimeMs = bgm.currentTime * 1000;
-
-    // Cek note dalam beatmap yang waktunya mendekati waktu audio saat ini
-    beatmapData.forEach((note, index) => {
-        if (!note.spawned && currentTimeMs >= note.timestamp - 1000) { 
-            // -1000 ms = note dimunculkan 1 detik sebelum jatuh tepat di lane
-            spawnNote(note);
-            note.spawned = true; // Tandai note sudah dimunculkan
+        function toggleLeaderboard(show) {
+            document.getElementById('leaderboard-modal').style.display = show ? 'flex' : 'none';
         }
-    });
 
-    // Deteksi jika lagu selesai
-    if (bgm.ended) {
-        endGame();
-    } else {
-        requestAnimationFrame(gameLoop);
-    }
-}
+        function startGame() {
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            
+            score = 0;
+            combo = 0;
+            isPlaying = true;
+            updateHUD();
 
-function spawnNote(noteData) {
-    // Logika animasi/pembentukan elemen Note visual di lane terkait
-    console.log(`Spawn note di lane ${noteData.lane} pada detik ke-${bgm.currentTime}`);
-}
+            // Putar Musik Saat Play Ditekan
+            bgm.currentTime = 0;
+            bgm.play().then(() => {
+                requestAnimationFrame(gameLoop);
+            }).catch(error => {
+                alert("Gagal memutar audio! Pastikan nama file adalah 'music.mp3' di folder yang sama.");
+            });
+        }
 
-function endGame() {
-    isPlaying = false;
-    alert(`Game Selesai! Skor Anda: ${score}`);
-    document.getElementById('main-menu').style.display = 'flex';
-    document.getElementById('game-screen').style.display = 'none';
-}
+        function gameLoop() {
+            if (!isPlaying) return;
 
-function updateHUD() {
-    document.getElementById('score-display').innerText = score.toString().padStart(6, '0');
-    document.getElementById('combo-display').innerText = combo + 'x';
-}
+            if (bgm.ended) {
+                endGame();
+            } else {
+                requestAnimationFrame(gameLoop);
+            }
+        }
 
-function hitLane(laneIndex) {
-    if (!isPlaying) return;
+        function endGame() {
+            isPlaying = false;
+            alert(`Game Selesai! Skor Anda: ${score}`);
+            document.getElementById('main-menu').style.display = 'flex';
+            document.getElementById('game-screen').style.display = 'none';
+        }
 
-    // Hitung jarak waktu pencetan dengan timestamp note terdekat
-    const currentAudioTime = bgm.currentTime * 1000;
-    
-    // Simulasi hit sederhana
-    const judgments = ['PERFECT', 'GOOD', 'MISS'];
-    const rand = Math.random();
-    let result = rand < 0.6 ? 'PERFECT' : (rand < 0.9 ? 'GOOD' : 'MISS');
+        function updateHUD() {
+            document.getElementById('score-display').innerText = score.toString().padStart(6, '0');
+            document.getElementById('combo-display').innerText = combo + 'x';
+        }
 
-    triggerJudgment(result);
-}
+        function hitLane(laneIndex) {
+            if (!isPlaying) return;
 
-function triggerJudgment(type) {
-    const el = document.getElementById('judgment-text');
-    el.innerText = type;
-    el.style.opacity = '1';
-    
-    if (type === 'PERFECT') {
-        el.style.color = '#ff5e97';
-        score += 1000;
-        combo++;
-    } else if (type === 'GOOD') {
-        el.style.color = '#ffb800';
-        score += 500;
-        combo++;
-    } else {
-        el.style.color = '#888888';
-        combo = 0;
-    }
+            const judgments = ['PERFECT', 'GOOD', 'MISS'];
+            const rand = Math.random();
+            let result = rand < 0.6 ? 'PERFECT' : (rand < 0.9 ? 'GOOD' : 'MISS');
 
-    updateHUD();
-    setTimeout(() => { el.style.opacity = '0'; }, 300);
-}
+            triggerJudgment(result);
+        }
+
+        function triggerJudgment(type) {
+            const el = document.getElementById('judgment-text');
+            el.innerText = type;
+            el.style.opacity = '1';
+            
+            if (type === 'PERFECT') {
+                el.style.color = '#ff5e97';
+                score += 1000;
+                combo++;
+            } else if (type === 'GOOD') {
+                el.style.color = '#ffb800';
+                score += 500;
+                combo++;
+            } else {
+                el.style.color = '#888888';
+                combo = 0;
+            }
+
+            updateHUD();
+            setTimeout(() => { el.style.opacity = '0'; }, 300);
+        }
     </script>
 </body>
 </html>
