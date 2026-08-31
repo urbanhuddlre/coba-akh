@@ -271,9 +271,11 @@
 
         // Memuat file JSON jika ada
         fetch('beatmap.json')
-            .then(res => res.json())
-            .then(data => { beatmapData = data.beatmap; })
-            .catch(err => console.log("Memakai beatmap cadangan (karena dibuka tanpa Live Server / file json tidak ada)."));
+    .then(res => res.json())
+    .then(data => { 
+        beatmapData = data.beatmap;
+        console.log("Beatmap lagu penuh berhasil dimuat!", beatmapData.length, "note");
+    });
 
         function toggleLeaderboard(show) {
             document.getElementById('leaderboard-modal').style.display = show ? 'flex' : 'none';
