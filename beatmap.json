@@ -1,0 +1,45 @@
+{
+  "songInfo": {
+    "title": "Kamu Buat Aku Jadi Pusing Malah Lele",
+    "bpm": 125,
+    "offset": 500,
+    "lanes": 4
+  },
+  "beatmap": [
+    { "timestamp": 500,  "lane": 0, "type": "tap" },
+    { "timestamp": 740,  "lane": 1, "type": "tap" },
+    { "timestamp": 980,  "lane": 2, "type": "tap" },
+    { "timestamp": 1220, "lane": 3, "type": "tap" },
+
+    { "timestamp": 1700, "lane": 1, "type": "tap" },
+    { "timestamp": 1940, "lane": 2, "type": "tap" },
+    { "timestamp": 2180, "lane": 0, "type": "tap" },
+    { "timestamp": 2420, "lane": 3, "type": "tap" },
+
+    { "timestamp": 2900, "lane": 0, "type": "tap" },
+    { "timestamp": 3140, "lane": 1, "type": "tap" },
+    { "timestamp": 3380, "lane": 2, "type": "tap" },
+    { "timestamp": 3620, "lane": 3, "type": "tap" },
+    { "timestamp": 3860, "lane": 2, "type": "tap" },
+    { "timestamp": 4100, "lane": 1, "type": "tap" },
+
+    { "timestamp": 4580, "lane": 0, "type": "tap" },
+    { "timestamp": 4820, "lane": 2, "type": "tap" },
+    { "timestamp": 5060, "lane": 1, "type": "tap" },
+    { "timestamp": 5300, "lane": 3, "type": "tap" },
+
+    { "timestamp": 5780, "lane": 0, "type": "hold", "duration": 480 },
+    { "timestamp": 6260, "lane": 3, "type": "hold", "duration": 480 },
+
+    { "timestamp": 6980, "lane": 1, "type": "tap" },
+    { "timestamp": 7220, "lane": 2, "type": "tap" },
+    { "timestamp": 7460, "lane": 1, "type": "tap" },
+    { "timestamp": 7700, "lane": 2, "type": "tap" },
+
+    { "timestamp": 8180, "lane": 0, "type": "tap" },
+    { "timestamp": 8420, "lane": 3, "type": "tap" },
+    { "timestamp": 8660, "lane": 1, "type": "tap" },
+    { "timestamp": 8900, "lane": 2, "type": "tap" },
+    { "timestamp": 9140, "lane": 0, "type": "tap" }
+  ]
+}

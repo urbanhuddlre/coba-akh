@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Gen-Z Rhythm Game</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --accent-color: #ff5e97;
+            --lane-color: #f0f0f5;
+            --text-color: #1a1a1a;
+        }
+
+        * {
+            box-sizing: border-box;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
+        }
+
+        /* MENU UTAMA */
+        #main-menu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 20px;
+        }
+
+        .logo-placeholder {
+            width: 180px;
+            height: 180px;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%);
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(255, 94, 151, 0.3);
+            font-weight: 900;
+            color: #fff;
+            font-size: 24px;
+        }
+
+        .btn {
+            width: 200px;
+            padding: 16px;
+            border: none;
+            border-radius: 30px;
+            background: var(--text-color);
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            background: #f0f0f5;
+            color: var(--text-color);
+        }
+
+        /* LEADERBOARD MODAL */
+        #leaderboard-modal {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .lb-list {
+            width: 100%;
+            max-width: 350px;
+            margin-top: 20px;
+        }
+
+        .lb-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 20px;
+            margin-bottom: 8px;
+            background: #f8f8fc;
+            border-radius: 15px;
+            font-weight: 600;
+        }
+
+        /* IN-GAME DISPLAY */
+        #game-screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #hud {
+            position: absolute;
+            top: 30px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 30px;
+            font-size: 22px;
+            font-weight: 800;
+            z-index: 10;
+        }
+
+        #judgment-text {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 36px;
+            font-weight: 900;
+            opacity: 0;
+            transition: transform 0.1s ease, opacity 0.2s ease;
+            z-index: 10;
+        }
+
+        /* LANES & HEART KEYS */
+        .lanes-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px; /* Jarak antar lane */
+            width: 100%;
+            height: 100%;
+            padding: 0 10px;
+        }
+
+        .lane {
+            flex: 1;
+            max-width: 80px;
+            height: 100%;
+            background: rgba(240, 240, 245, 0.4);
+            border-radius: 20px;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 40px;
+        }
+
+        .heart-key {
+            width: 50px;
+            height: 50px;
+            background-color: var(--accent-color);
+            display: inline-block;
+            transform: rotate(-45deg);
+            position: relative;
+            box-shadow: 0 6px 15px rgba(255, 94, 151, 0.4);
+        }
+
+        .heart-key::before, .heart-key::after {
+            content: "";
+            width: 50px;
+            height: 50px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .heart-key::before { top: -25px; left: 0; }
+        .heart-key::after { left: 25px; top: 0; }
+
+        .note {
+            width: 45px;
+            height: 45px;
+            background: var(--text-color);
+            border-radius: 50%;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MENU UTAMA -->
+    <div id="main-menu">
+        <div class="logo-placeholder" id="custom-logo">YOUR LOGO</div>
+        <button class="btn" onclick="startGame()">PLAY</button>
+        <button class="btn btn-secondary" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
+    </div>
+
+    <!-- GLOBAL LEADERBOARD -->
+    <div id="leaderboard-modal">
+        <h2>Global Leaderboard</h2>
+        <div class="lb-list">
+            <div class="lb-item"><span>1. GenZ_King</span><span>985,000</span></div>
+            <div class="lb-item"><span>2. Aesthetic2004</span><span>942,100</span></div>
+            <div class="lb-item"><span>3. RhythmGod</span><span>910,500</span></div>
+        </div>
+        <button class="btn btn-secondary" style="margin-top: 20px;" onclick="toggleLeaderboard(false)">CLOSE</button>
+    </div>
+
+    <!-- IN-GAME SCREEN -->
+    <div id="game-screen">
+        <div id="hud">
+            <span id="score-display">000000</span>
+            <span id="combo-display">0x</span>
+        </div>
+        <div id="judgment-text">PERFECT</div>
+
+        <div class="lanes-container">
+            <div class="lane" id="lane-0" touchstart="hitLane(0)"><div class="heart-key"></div></div>
+            <div class="lane" id="lane-1" touchstart="hitLane(1)"><div class="heart-key"></div></div>
+            <div class="lane" id="lane-2" touchstart="hitLane(2)"><div class="heart-key"></div></div>
+            <div class="lane" id="lane-3" touchstart="hitLane(3)"><div class="heart-key"></div></div>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let combo = 0;
+
+        function toggleLeaderboard(show) {
+            document.getElementById('leaderboard-modal').style.display = show ? 'flex' : 'none';
+        }
+
+        function startGame() {
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            score = 0;
+            combo = 0;
+            updateHUD();
+        }
+
+        function updateHUD() {
+            document.getElementById('score-display').innerText = score.toString().padStart(6, '0');
+            document.getElementById('combo-display').innerText = combo + 'x';
+        }
+
+        function hitLane(laneIndex) {
+            // Simulasi Random Hit Judgment saat lane disentuh (Touch Device Ready)
+            const judgments = ['PERFECT', 'GOOD', 'MISS'];
+            const weights = [0.6, 0.3, 0.1]; // Peluang ketepatan
+            const rand = Math.random();
+            let result = 'MISS';
+
+            if (rand < weights[0]) result = 'PERFECT';
+            else if (rand < weights[0] + weights[1]) result = 'GOOD';
+
+            triggerJudgment(result);
+        }
+
+        function triggerJudgment(type) {
+            const el = document.getElementById('judgment-text');
+            el.innerText = type;
+            el.style.opacity = '1';
+            
+            if (type === 'PERFECT') {
+                el.style.color = '#ff5e97';
+                score += 1000;
+                combo++;
+            } else if (type === 'GOOD') {
+                el.style.color = '#ffb800';
+                score += 500;
+                combo++;
+            } else {
+                el.style.color = '#888888';
+                combo = 0;
+            }
+
+            updateHUD();
+            setTimeout(() => { el.style.opacity = '0'; }, 300);
+        }
+    </script>
+</body>
+</html>
