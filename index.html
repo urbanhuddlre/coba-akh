@@ -32,30 +32,90 @@
     display: none;
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(255, 255, 255, 0.98);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 50;
+    z-index: 90;
 }
 
 .result-box {
-    background: #f8f8fc;
-    padding: 24px;
-    border-radius: 20px;
-    width: 80%;
-    max-width: 320px;
-    margin: 20px 0;
+    background: #ffffff;
+    border: 2px solid #f0f0f5;
+    padding: 30px 24px;
+    border-radius: 30px;
+    width: 85%;
+    max-width: 360px;
     text-align: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    box-shadow: 0 20px 40px rgba(255, 94, 151, 0.15);
 }
 
-.result-box h3 { margin: 0 0 15px 0; }
+.score-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: #888;
+    letter-spacing: 1.5px;
+    margin-top: 10px;
+}
 
-.stat-item {
+.score-big {
+    font-size: 40px;
+    font-weight: 900;
+    color: var(--text-color);
+    margin-bottom: 15px;
+}
+
+.stats-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 25px;
+}
+
+.stat-pill {
+    flex: 1;
+    padding: 10px 4px;
+    border-radius: 15px;
+    font-size: 11px;
+    font-weight: 800;
+    background: #f8f8fc;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-pill span {
     font-size: 18px;
+}
+
+.stat-pill.perfect { color: #ff5e97; }
+.stat-pill.good { color: #ffb800; }
+.stat-pill.miss { color: #888888; }
+
+/* Styling Input Username Kustom */
+.input-group {
+    margin-bottom: 15px;
+}
+
+#username-input {
+    width: 100%;
+    padding: 14px 20px;
+    border: 2px solid #f0f0f5;
+    border-radius: 25px;
+    outline: none;
+    font-size: 14px;
     font-weight: 700;
-    margin: 8px 0;
+    text-align: center;
+    background: #f8f8fc;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+}
+
+#username-input:focus {
+    border-color: var(--accent-color);
+    background: #fff;
+    box-shadow: 0 0 10px rgba(255, 94, 151, 0.2);
 }
 
 .stat-item.perfect { color: #ff5e97; }
@@ -153,14 +213,25 @@
 
         <!-- RESULT SCREEN -->
 <div id="result-screen">
-    <h2>GAME OVER</h2>
     <div class="result-box">
-        <p>Final Score: <span id="res-score">0</span></p>
-        <div class="stat-item perfect">PERFECT: <span id="res-perfect">0</span></div>
-        <div class="stat-item good">GOOD: <span id="res-good">0</span></div>
-        <div class="stat-item miss">MISS: <span id="res-miss">0</span></div>
+        <h2 style="margin: 0 0 10px 0; color: var(--accent-color);">GAME OVER</h2>
+        
+        <div class="score-title">TOTAL SCORE</div>
+        <div id="res-score" class="score-big">0</div>
+
+        <div class="stats-container">
+            <div class="stat-pill perfect">PERFECT <span id="res-perfect">0</span></div>
+            <div class="stat-pill good">GOOD <span id="res-good">0</span></div>
+            <div class="stat-pill miss">MISS <span id="res-miss">0</span></div>
+        </div>
+
+        <!-- Form Input Username Kustom -->
+        <div class="input-group">
+            <input type="text" id="username-input" placeholder="Masukkan Nama Kamu..." maxlength="12">
+        </div>
+
+        <button class="btn" onclick="saveScoreAndExit()">SUBMIT SCORE</button>
     </div>
-    <button class="btn" onclick="saveScoreAndExit()">SUBMIT SCORE</button>
 </div>
 
         #hud {
@@ -416,23 +487,57 @@ fetch('beatmap.json')
         });
     }
 }
-        function gameLoop() {
-            if (!isPlaying) return;
+        function gameLoop(timestamp) {
+    if (!isPlaying) return;
 
-            const currentTimeMs = bgm.currentTime * 1000;
-            beatmapData.forEach((note) => {
-                if (!note.spawned && currentTimeMs >= (note.timestamp - 1000)) { 
-                    spawnNote(note);
-                    note.spawned = true; 
-                }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawLanes();
+
+    const currentTime = bgm.currentTime * 1000; // milidetik
+
+    // 1. Spawn Note Baru
+    beatmapData.forEach(note => {
+        if (!note.spawned && currentTime >= note.timestamp - 1500) {
+            notes.push({
+                lane: note.lane,
+                targetTime: note.timestamp,
+                y: 0,
+                hit: false
             });
-
-            if (bgm.ended) {
-                endGame();
-            } else {
-                requestAnimationFrame(gameLoop);
-            }
+            note.spawned = true;
         }
+    });
+
+    // 2. Update & Draw Note
+    for (let i = notes.length - 1; i >= 0; i--) {
+        const note = notes[i];
+        
+        // Hitung posisi Y berdasarkan waktu
+        const timeDiff = note.targetTime - currentTime;
+        note.y = hitLineY - (timeDiff * noteSpeed);
+
+        // --- CEK NOTE LEWAT (AUTO MISS) ---
+        // Jika note melewati garis penilaian dan belum dipencet
+        if (note.y > hitLineY + 50 && !note.hit) {
+            triggerJudgment('MISS'); // Catat Miss
+            notes.splice(i, 1);       // Hapus note
+            continue;
+        }
+
+        // Gambar Note yang aktif
+        if (!note.hit && note.y >= 0 && note.y <= canvas.height) {
+            drawNote(note.lane, note.y);
+        }
+    }
+
+    // 3. Cek Penutupan Lagu jika Audio Berakhir
+    if (bgm.ended) {
+        endGame();
+        return;
+    }
+
+    requestAnimationFrame(gameLoop);
+}
 
         function spawnNote(noteData) {
             const laneElement = document.getElementById(`lane-${noteData.lane}`);
@@ -470,37 +575,61 @@ fetch('beatmap.json')
             document.getElementById('combo-display').innerText = combo + 'x';
         }
 
-        function hitLane(laneIndex) {
-            if (!isPlaying) return;
+        function checkHit(laneIndex) {
+    if (!isPlaying) return;
 
-            const judgments = ['PERFECT', 'GOOD', 'MISS'];
-            const rand = Math.random();
-            let result = rand < 0.6 ? 'PERFECT' : (rand < 0.9 ? 'GOOD' : 'MISS');
+    const currentTime = bgm.currentTime * 1000;
 
-            triggerJudgment(result);
-        }
+    for (let i = 0; i < notes.length; i++) {
+        const note = notes[i];
+        if (note.lane === laneIndex && !note.hit) {
+            const diff = Math.abs(note.targetTime - currentTime);
 
-        function triggerJudgment(type) {
-            const el = document.getElementById('judgment-text');
-            el.innerText = type;
-            el.style.opacity = '1';
-            
-            if (type === 'PERFECT') {
-                el.style.color = '#ff5e97';
-                score += 1000;
-                combo++;
-            } else if (type === 'GOOD') {
-                el.style.color = '#ffb800';
-                score += 500;
-                combo++;
-            } else {
-                el.style.color = '#888888';
-                combo = 0;
+            if (diff <= 80) { // Rentang Perfect
+                note.hit = true;
+                triggerJudgment('PERFECT');
+                notes.splice(i, 1);
+                break;
+            } else if (diff <= 160) { // Rentang Good
+                note.hit = true;
+                triggerJudgment('GOOD');
+                notes.splice(i, 1);
+                break;
             }
-
-            updateHUD();
-            setTimeout(() => { el.style.opacity = '0'; }, 300);
         }
+    }
+}
+      function triggerJudgment(type) {
+    const el = document.getElementById('judgment-text');
+    el.innerText = type;
+    el.style.opacity = '1';
+    
+    if (type === 'PERFECT') {
+        el.style.color = '#ff5e97';
+        score += 1000;
+        combo++;
+        perfectCount++;
+    } else if (type === 'GOOD') {
+        el.style.color = '#ffb800';
+        score += 500;
+        combo++;
+        goodCount++;
+    } else { // MISS
+        el.style.color = '#888888';
+        combo = 0;
+        missCount++;
+
+        // --- CEK BATAS MAXIMUM MISS (GAME OVER) ---
+        if (missCount >= 5) {
+            bgm.pause(); // Hentikan musik
+            endGame();   // Buka layar Game Over / Result Screen
+            return;
+        }
+    }
+
+    updateHUD();
+    setTimeout(() => { el.style.opacity = '0'; }, 300);
+}
         // Tambahkan variabel counter di bagian atas script
 let perfectCount = 0;
 let goodCount = 0;
@@ -590,6 +719,61 @@ function saveScoreAndExit() {
         document.getElementById('result-screen').style.display = 'none';
         document.getElementById('main-menu').style.display = 'flex';
     }
+}
+        // Membuka UI Result Screen tanpa alert/prompt browser
+function endGame() {
+    isPlaying = false;
+    document.getElementById('game-screen').style.display = 'none';
+    
+    // Setel angka hasil permainan
+    document.getElementById('res-score').innerText = score.toLocaleString();
+    document.getElementById('res-perfect').innerText = perfectCount;
+    document.getElementById('res-good').innerText = goodCount;
+    document.getElementById('res-miss').innerText = missCount;
+    
+    // Reset isi input nama
+    document.getElementById('username-input').value = '';
+    
+    // Tampilkan modal hasil
+    document.getElementById('result-screen').style.display = 'flex';
+}
+
+// Menyimpan ke Firebase menggunakan input kustom dari UI
+function saveScoreAndExit() {
+    const inputVal = document.getElementById('username-input').value.trim();
+    const username = inputVal !== "" ? inputVal : "Player";
+
+    const submitBtn = document.querySelector('#result-screen .btn');
+    submitBtn.innerText = "SAVING...";
+    submitBtn.disabled = true;
+
+    // Simpan ke Firebase Realtime Database
+    try {
+        firebase.database().ref('leaderboard').push({
+            username: username,
+            score: score,
+            perfect: perfectCount,
+            good: goodCount,
+            miss: missCount,
+            timestamp: Date.now()
+        }).then(() => {
+            submitBtn.innerText = "SUBMIT SCORE";
+            submitBtn.disabled = false;
+            document.getElementById('result-screen').style.display = 'none';
+            toggleLeaderboard(true); // Langsung buka halaman leaderboard
+        }).catch(() => {
+            fallbackExit(submitBtn);
+        });
+    } catch(e) {
+        fallbackExit(submitBtn);
+    }
+}
+
+function fallbackExit(btn) {
+    btn.innerText = "SUBMIT SCORE";
+    btn.disabled = false;
+    document.getElementById('result-screen').style.display = 'none';
+    document.getElementById('main-menu').style.display = 'flex';
 }
     </script>
 </body>
