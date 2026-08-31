@@ -224,60 +224,122 @@
     </div>
 
     <script>
-        let score = 0;
-        let combo = 0;
+        // 1. Inisialisasi Audio
+const bgm = new Audio('music.mp3'); // assets/song.mp3
 
-        function toggleLeaderboard(show) {
-            document.getElementById('leaderboard-modal').style.display = show ? 'flex' : 'none';
+let score = 0;
+let combo = 0;
+let isPlaying = false;
+let beatmapData = [];
+
+// 2. Load File Beatmap JSON
+fetch('beatmap.json')
+    .then(response => response.json())
+    .then(data => {
+        beatmapData = data.beatmap;
+    })
+    .catch(err => console.error("Gagal memuat beatmap:", err));
+
+function toggleLeaderboard(show) {
+    document.getElementById('leaderboard-modal').style.display = show ? 'flex' : 'none';
+}
+
+function startGame() {
+    // Sembunyikan Menu & Tampilkan Game Screen
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'block';
+    
+    // Reset State Game
+    score = 0;
+    combo = 0;
+    isPlaying = true;
+    updateHUD();
+
+    // 3. Putar Musik & Game Loop (Sesuai Aturan Touch iOS/Android)
+    bgm.currentTime = 0;
+    bgm.play().then(() => {
+        requestAnimationFrame(gameLoop);
+    }).catch(error => {
+        console.log("Gagal memutar audio:", error);
+    });
+}
+
+// 4. Synchronization Loop (Mencocokkan Waktu Lagu dengan Beatmap)
+function gameLoop() {
+    if (!isPlaying) return;
+
+    // Ambil posisi waktu audio dalam milidetik (ms)
+    const currentTimeMs = bgm.currentTime * 1000;
+
+    // Cek note dalam beatmap yang waktunya mendekati waktu audio saat ini
+    beatmapData.forEach((note, index) => {
+        if (!note.spawned && currentTimeMs >= note.timestamp - 1000) { 
+            // -1000 ms = note dimunculkan 1 detik sebelum jatuh tepat di lane
+            spawnNote(note);
+            note.spawned = true; // Tandai note sudah dimunculkan
         }
+    });
 
-        function startGame() {
-            document.getElementById('main-menu').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'block';
-            score = 0;
-            combo = 0;
-            updateHUD();
-        }
+    // Deteksi jika lagu selesai
+    if (bgm.ended) {
+        endGame();
+    } else {
+        requestAnimationFrame(gameLoop);
+    }
+}
 
-        function updateHUD() {
-            document.getElementById('score-display').innerText = score.toString().padStart(6, '0');
-            document.getElementById('combo-display').innerText = combo + 'x';
-        }
+function spawnNote(noteData) {
+    // Logika animasi/pembentukan elemen Note visual di lane terkait
+    console.log(`Spawn note di lane ${noteData.lane} pada detik ke-${bgm.currentTime}`);
+}
 
-        function hitLane(laneIndex) {
-            // Simulasi Random Hit Judgment saat lane disentuh (Touch Device Ready)
-            const judgments = ['PERFECT', 'GOOD', 'MISS'];
-            const weights = [0.6, 0.3, 0.1]; // Peluang ketepatan
-            const rand = Math.random();
-            let result = 'MISS';
+function endGame() {
+    isPlaying = false;
+    alert(`Game Selesai! Skor Anda: ${score}`);
+    document.getElementById('main-menu').style.display = 'flex';
+    document.getElementById('game-screen').style.display = 'none';
+}
 
-            if (rand < weights[0]) result = 'PERFECT';
-            else if (rand < weights[0] + weights[1]) result = 'GOOD';
+function updateHUD() {
+    document.getElementById('score-display').innerText = score.toString().padStart(6, '0');
+    document.getElementById('combo-display').innerText = combo + 'x';
+}
 
-            triggerJudgment(result);
-        }
+function hitLane(laneIndex) {
+    if (!isPlaying) return;
 
-        function triggerJudgment(type) {
-            const el = document.getElementById('judgment-text');
-            el.innerText = type;
-            el.style.opacity = '1';
-            
-            if (type === 'PERFECT') {
-                el.style.color = '#ff5e97';
-                score += 1000;
-                combo++;
-            } else if (type === 'GOOD') {
-                el.style.color = '#ffb800';
-                score += 500;
-                combo++;
-            } else {
-                el.style.color = '#888888';
-                combo = 0;
-            }
+    // Hitung jarak waktu pencetan dengan timestamp note terdekat
+    const currentAudioTime = bgm.currentTime * 1000;
+    
+    // Simulasi hit sederhana
+    const judgments = ['PERFECT', 'GOOD', 'MISS'];
+    const rand = Math.random();
+    let result = rand < 0.6 ? 'PERFECT' : (rand < 0.9 ? 'GOOD' : 'MISS');
 
-            updateHUD();
-            setTimeout(() => { el.style.opacity = '0'; }, 300);
-        }
+    triggerJudgment(result);
+}
+
+function triggerJudgment(type) {
+    const el = document.getElementById('judgment-text');
+    el.innerText = type;
+    el.style.opacity = '1';
+    
+    if (type === 'PERFECT') {
+        el.style.color = '#ff5e97';
+        score += 1000;
+        combo++;
+    } else if (type === 'GOOD') {
+        el.style.color = '#ffb800';
+        score += 500;
+        combo++;
+    } else {
+        el.style.color = '#888888';
+        combo = 0;
+    }
+
+    updateHUD();
+    setTimeout(() => { el.style.opacity = '0'; }, 300);
+}
     </script>
 </body>
 </html>
