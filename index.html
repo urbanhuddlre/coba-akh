@@ -516,13 +516,16 @@ fetch('beatmap.json')
         const timeDiff = note.targetTime - currentTime;
         note.y = hitLineY - (timeDiff * noteSpeed);
 
-        // --- CEK NOTE LEWAT (AUTO MISS) ---
-        // Jika note melewati garis penilaian dan belum dipencet
-        if (note.y > hitLineY + 50 && !note.hit) {
-            triggerJudgment('MISS'); // Catat Miss
-            notes.splice(i, 1);       // Hapus note
-            continue;
-        }
+       // Di dalam gameLoop(): Cek jika note sudah melewahi batas bawah layar (Auto MISS)
+const allNotes = document.querySelectorAll('.note');
+allNotes.forEach(note => {
+    const rect = note.getBoundingClientRect();
+    // Jika posisi note sudah melewati batas bawah layar HP/canvas
+    if (rect.top > window.innerHeight - 50) {
+        note.remove(); // Hapus dari DOM
+        triggerJudgment('MISS');
+    }
+});
 
         // Gambar Note yang aktif
         if (!note.hit && note.y >= 0 && note.y <= canvas.height) {
@@ -575,28 +578,47 @@ fetch('beatmap.json')
             document.getElementById('combo-display').innerText = combo + 'x';
         }
 
-        function checkHit(laneIndex) {
+        function hitLane(laneIndex) {
     if (!isPlaying) return;
 
-    const currentTime = bgm.currentTime * 1000;
+    // 1. Ambil jalur/lane yang ditekan (0, 1, 2, atau 3)
+    const lanes = document.querySelectorAll('.lane');
+    const currentLane = lanes[laneIndex];
+    if (!currentLane) return;
 
-    for (let i = 0; i < notes.length; i++) {
-        const note = notes[i];
-        if (note.lane === laneIndex && !note.hit) {
-            const diff = Math.abs(note.targetTime - currentTime);
+    // 2. Cari semua note yang sedang meluncur di jalur ini
+    const activeNotes = currentLane.querySelectorAll('.note');
 
-            if (diff <= 80) { // Rentang Perfect
-                note.hit = true;
-                triggerJudgment('PERFECT');
-                notes.splice(i, 1);
-                break;
-            } else if (diff <= 160) { // Rentang Good
-                note.hit = true;
-                triggerJudgment('GOOD');
-                notes.splice(i, 1);
-                break;
-            }
-        }
+    // Jika pencet tapi tidak ada note di jalur tersebut = MISS
+    if (activeNotes.length === 0) {
+        triggerJudgment('MISS');
+        return;
+    }
+
+    // 3. Ambil note paling bawah (paling dekat tombol) & tombol hatinya
+    const targetNote = activeNotes[0];
+    const heartKey = currentLane.querySelector('.heart-key');
+
+    if (!targetNote || !heartKey) return;
+
+    // 4. Hitung jarak piksel antara note dan tombol hati
+    const noteRect = targetNote.getBoundingClientRect();
+    const heartRect = heartKey.getBoundingClientRect();
+
+    const noteCenter = noteRect.top + (noteRect.height / 2);
+    const heartCenter = heartRect.top + (heartRect.height / 2);
+    const distance = Math.abs(noteCenter - heartCenter);
+
+    // 5. Penilaian berdasarkan jarak (dalam piksel)
+    if (distance <= 45) {
+        targetNote.remove(); // Hapus note yang berhasil ditekan
+        triggerJudgment('PERFECT');
+    } else if (distance <= 90) {
+        targetNote.remove();
+        triggerJudgment('GOOD');
+    } else {
+        targetNote.remove();
+        triggerJudgment('MISS');
     }
 }
       function triggerJudgment(type) {
