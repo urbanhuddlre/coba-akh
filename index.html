@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TUH EP</title>
     
     <!-- Firebase App & Database SDK -->
@@ -36,43 +36,49 @@
             color: var(--text-color);
             width: 100vw;
             height: 100vh;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
         }
 
+        /* LAYAR UTAMA FULLSCREEN & KONTROL LEBAR */
         #game-container {
-            width: 100%;
-            max-width: 480px; /* Lebar maksimal agar pas di HP maupun PC */
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
+            max-width: 480px;
             max-height: 100vh;
             background: #ffffff;
             position: relative;
-            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+            box-shadow: 0 0 30px rgba(0,0,0,0.08);
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        /* PERBAIKAN UKURAN LOGO AGAR TIDAK RAKSASA */
-        .game-logo {
-            width: 120px !important;
-            height: auto !important;
-            max-height: 120px !important;
-            object-fit: contain;
+        /* LOGO WRAPPER (DIJAMIN TIDAK MEMBESAR) */
+        .logo-wrapper {
+            width: 130px;
+            height: 130px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             margin-bottom: 15px;
         }
 
-        .result-logo {
-            width: 70px !important;
-            height: auto !important;
-            max-height: 70px !important;
+        .logo-wrapper img {
+            width: 100%;
+            height: 100%;
             object-fit: contain;
+            filter: drop-shadow(0 4px 10px rgba(255, 94, 151, 0.3));
+        }
+
+        .logo-wrapper.small {
+            width: 80px;
+            height: 80px;
             margin-bottom: 10px;
         }
 
-        
         /* UI SCREENS */
         #main-menu, #result-screen, #leaderboard-modal {
             position: absolute;
@@ -85,7 +91,7 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
-         }
+        }
 
         #game-screen {
             display: none;
