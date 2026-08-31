@@ -5,25 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>TUH EP</title>
     <style>
-        /* Pembungkus logo agar ukurannya teratur */
-.logo-wrapper {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-/* Kunci ukuran gambar logo */
-.custom-logo-img {
-    width: 160px !important;       /* Paksa lebar ke 160px */
-    max-width: 50vw !important;    /* Maksimal setengah lebar layar HP */
-    height: auto !important;       /* Tinggi menyesuaikan proporsi */
-    max-height: 160px !important;  /* Mencegah logo memanjang ke bawah */
-    object-fit: contain !important;
-    display: block !important;
-}
-        :root {
+                :root {
             --bg-color: #ffffff;
             --accent-color: #e95500;
             --lane-color: #ffee9b;
@@ -47,46 +29,54 @@
         }
 
         /* MENU UTAMA */
-        #main-menu {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            gap: 16px;
-            padding: 20px;
-            margin: 0 auto;
-            max-width: 400px;
-        }
+       #main-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 16px;
+    padding: 20px;
+    margin: 0 auto;
+    max-width: 400px;
+    position: relative;
+    z-index: 1;
+}
 
-        /* STYLING LOGO CUSTOM RESPONSIF */
-        .logo.png {
-            width: 160px;
-            max-width: 40vw;
-            height: auto;
-            object-fit: contain;
-            margin: 10px auto;
-            filter: drop-shadow(0 8px 16px rgba(255, 94, 151, 0.25));
-        }
+.logo-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    pointer-events: none; /* Mencegah logo menghalangi klik ke tombol di sekitarnya */
+}
 
-        .btn {
-            width: 200px;
-            padding: 16px;
-            border: none;
-            border-radius: 30px;
-            background: var(--text-color);
-            color: #fff;
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-            cursor: pointer;
-        }
+.custom-logo-img {
+    width: 160px !important;
+    max-width: 50vw !important;
+    height: auto !important;
+    max-height: 160px !important;
+    object-fit: contain !important;
+    display: block !important;
+    pointer-events: none; /* Logo tidak akan merespons atau menghalangi klik */
+}
 
-        .btn-secondary {
-            background: #f0f0f5;
-            color: var(--text-color);
-        }
+.btn {
+    width: 200px;
+    padding: 16px;
+    border: none;
+    border-radius: 30px;
+    background: var(--text-color);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    cursor: pointer;
+    position: relative;
+    z-index: 10; /* Memastikan tombol selalu berada di lapisan paling atas */
+}
 
         /* LEADERBOARD MODAL */
         #leaderboard-modal {
@@ -375,17 +365,27 @@
             setTimeout(() => { el.style.opacity = '0'; }, 300);
         }
         
-    // 1. Konfigurasi Firebase (Ganti dengan data dari Console Firebase Anda)
+    // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyD8sLyanphP9Y2ZY8MWmDpsBBOcCegMW08",
   authDomain: "urbanhudlde.firebaseapp.com",
   projectId: "urbanhudlde",
   storageBucket: "urbanhudlde.firebasestorage.app",
   messagingSenderId: "992493553966",
-  appId: "1:992493553966:web:1d63de121b27e11d8092bf",
-  measurementId: "G-CN72ZM0269"
+  appId: "1:992493553966:web:7440d47c1797356c8092bf",
+  measurementId: "G-K3NS4CWZHR"
 };
 
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
 // Inisialisasi Firebase & Database
 firebase.initializeApp(firebaseConfig);
