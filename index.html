@@ -2,206 +2,65 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TUH EP</title>
+    
+    <!-- Firebase App & Database SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
         :root {
-            --bg-color: #ffffff;
             --accent-color: #e95500;
-            --lane-color: #ffee9b;
+            --bg-color: #f6f6f9;
             --text-color: #adc642;
+            --lane-color: #ffee9b;
         }
 
         * {
             box-sizing: border-box;
-            touch-action: manipulation;
             user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
         }
 
-        body, html {
+        body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-color);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             overflow: hidden;
         }
 
-        #result-screen {
-    display: none;
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(8px);
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 90;
-}
-
-.result-box {
-    background: #ffffff;
-    border: 2px solid #f0f0f5;
-    padding: 30px 24px;
-    border-radius: 30px;
-    width: 85%;
-    max-width: 360px;
-    text-align: center;
-    box-shadow: 0 20px 40px rgba(255, 94, 151, 0.15);
-}
-
-.score-title {
-    font-size: 12px;
-    font-weight: 800;
-    color: #888;
-    letter-spacing: 1.5px;
-    margin-top: 10px;
-}
-
-.score-big {
-    font-size: 40px;
-    font-weight: 900;
-    color: var(--text-color);
-    margin-bottom: 15px;
-}
-
-.stats-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 25px;
-}
-
-.stat-pill {
-    flex: 1;
-    padding: 10px 4px;
-    border-radius: 15px;
-    font-size: 11px;
-    font-weight: 800;
-    background: #f8f8fc;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.stat-pill span {
-    font-size: 18px;
-}
-
-.stat-pill.perfect { color: #ff5e97; }
-.stat-pill.good { color: #ffb800; }
-.stat-pill.miss { color: #888888; }
-
-/* Styling Input Username Kustom */
-.input-group {
-    margin-bottom: 15px;
-}
-
-#username-input {
-    width: 100%;
-    padding: 14px 20px;
-    border: 2px solid #f0f0f5;
-    border-radius: 25px;
-    outline: none;
-    font-size: 14px;
-    font-weight: 700;
-    text-align: center;
-    background: #f8f8fc;
-    color: var(--text-color);
-    transition: all 0.2s ease;
-}
-
-#username-input:focus {
-    border-color: var(--accent-color);
-    background: #fff;
-    box-shadow: 0 0 10px rgba(255, 94, 151, 0.2);
-}
-
-.stat-item.perfect { color: #ff5e97; }
-.stat-item.good { color: #ffb800; }
-.stat-item.miss { color: #888888; }
-
-        #main-menu {
+        #game-container {
+            width: 100%;
+            max-width: 420px;
+            height: 100vh;
+            background: #ffffff;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            gap: 16px;
-            padding: 20px;
-            margin: 0 auto;
-            max-width: 400px;
-            position: relative;
-            z-index: 1;
+            overflow: hidden;
         }
 
-        .logo-wrapper {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-            pointer-events: none;
-        }
-
-        .custom-logo-img {
-            width: 160px !important;
-            max-width: 50vw !important;
-            height: auto !important;
-            max-height: 160px !important;
-            object-fit: contain !important;
-            display: block !important;
-            pointer-events: none;
-        }
-
-        .btn {
-            width: 200px;
-            padding: 16px;
-            border: none;
-            border-radius: 30px;
-            background: var(--text-color);
-            color: #fff;
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-            cursor: pointer;
-            position: relative;
-            z-index: 10;
-        }
-
-        .btn-secondary {
-            background: #f0f0f5;
-            color: var(--text-color);
-        }
-
-        #leaderboard-modal {
-            display: none;
+        /* UI SCREENS */
+        #main-menu, #result-screen, #leaderboard-modal {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 20px;
-            z-index: 100;
-        }
-
-        .lb-list {
-            width: 100%;
-            max-width: 350px;
-            margin-top: 20px;
-        }
-
-        .lb-item {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 50;
             display: flex;
-            justify-content: space-between;
-            padding: 12px 20px;
-            margin-bottom: 8px;
-            background: #f8f8fc;
-            border-radius: 15px;
-            font-weight: 600;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
 
         #game-screen {
@@ -211,397 +70,368 @@
             position: relative;
         }
 
-        <!-- RESULT SCREEN -->
-<div id="result-screen">
-    <div class="result-box">
-        <h2 style="margin: 0 0 10px 0; color: var(--accent-color);">GAME OVER</h2>
-        
-        <div class="score-title">TOTAL SCORE</div>
-        <div id="res-score" class="score-big">0</div>
+        /* BUTTONS & UI */
+        .btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(255, 94, 151, 0.3);
+            transition: transform 0.1s;
+            margin: 8px 0;
+            width: 80%;
+            max-width: 250px;
+            text-align: center;
+        }
 
-        <div class="stats-container">
-            <div class="stat-pill perfect">PERFECT <span id="res-perfect">0</span></div>
-            <div class="stat-pill good">GOOD <span id="res-good">0</span></div>
-            <div class="stat-pill miss">MISS <span id="res-miss">0</span></div>
-        </div>
+        .btn:active { transform: scale(0.95); }
 
-        <!-- Form Input Username Kustom -->
-        <div class="input-group">
-            <input type="text" id="username-input" placeholder="Masukkan Nama Kamu..." maxlength="12">
-        </div>
-
-        <button class="btn" onclick="saveScoreAndExit()">SUBMIT SCORE</button>
-    </div>
-</div>
-
-        #hud {
+        /* HUD */
+        .hud {
             position: absolute;
-            top: 30px;
-            width: 100%;
+            top: 20px; left: 20px; right: 20px;
             display: flex;
             justify-content: space-between;
-            padding: 0 30px;
-            font-size: 22px;
             font-weight: 800;
+            font-size: 18px;
             z-index: 10;
         }
 
         #judgment-text {
             position: absolute;
-            top: 35%;
-            left: 50%;
+            top: 40%; left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 36px;
+            font-size: 32px;
             font-weight: 900;
             opacity: 0;
-            transition: transform 0.1s ease, opacity 0.2s ease;
+            transition: opacity 0.1s;
             z-index: 10;
+            pointer-events: none;
         }
 
-        .lanes-container {
+        /* GAME PLAY AREA */
+        .track-container {
             display: flex;
-            justify-content: center;
-            gap: 15px;
             width: 100%;
             height: 100%;
-            padding: 0 10px;
+            position: relative;
         }
 
         .lane {
             flex: 1;
-            max-width: 80px;
-            height: 100%;
-            background: rgba(240, 240, 245, 0.4);
-            border-radius: 20px;
+            border-right: 1px dashed #eee;
             position: relative;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            padding-bottom: 40px;
+            height: 100%;
             overflow: hidden;
         }
 
+        .lane:last-child { border-right: none; }
+
         .heart-key {
-            width: 50px;
-            height: 50px;
-            background-color: var(--accent-color);
-            display: inline-block;
-            transform: rotate(-45deg);
-            position: relative;
-            box-shadow: 0 6px 15px rgba(255, 94, 151, 0.4);
-            z-index: 6;
-        }
-
-        .heart-key::before, .heart-key::after {
-            content: "";
-            width: 50px;
-            height: 50px;
-            background-color: var(--accent-color);
-            border-radius: 50%;
             position: absolute;
-        }
-
-        .heart-key::before { top: -25px; left: 0; }
-        .heart-key::after { left: 25px; top: 0; }
-
-        .note {
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(135deg, #ff5e97, #ff9a9e);
-            border-radius: 50%;
-            position: absolute;
+            bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
-            box-shadow: 0 4px 10px rgba(255, 94, 151, 0.5);
-            z-index: 5;
-            animation: fall 1s linear forwards;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--accent-color);
+            background: white;
+            box-shadow: 0 4px 10px rgba(255, 94, 151, 0.2);
+        }
+
+        .heart-key:active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* NOTE ANIMATION */
+        .note {
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            left: calc(50% - 18px);
+            background: var(--accent-color);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 94, 151, 0.5);
+            animation: fall 1.5s linear forwards;
         }
 
         @keyframes fall {
-            0% { top: -60px; opacity: 1; }
-            100% { top: calc(100% - 90px); opacity: 0.8; }
+            0% { top: -40px; }
+            100% { top: 100%; }
+        }
+
+        /* RESULT SCREEN UI */
+        .result-box {
+            background: #ffffff;
+            border: 2px solid #f0f0f5;
+            padding: 30px 24px;
+            border-radius: 30px;
+            width: 85%;
+            max-width: 360px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(255, 94, 151, 0.15);
+        }
+
+        .score-big {
+            font-size: 36px;
+            font-weight: 900;
+            margin: 5px 0 15px 0;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .stat-pill {
+            flex: 1;
+            padding: 10px 4px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 800;
+            background: #f8f8fc;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-pill span { font-size: 18px; }
+        .stat-pill.perfect { color: #ff5e97; }
+        .stat-pill.good { color: #ffb800; }
+        .stat-pill.miss { color: #888888; }
+
+        #username-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #f0f0f5;
+            border-radius: 20px;
+            outline: none;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            background: #f8f8fc;
+            margin-bottom: 15px;
+        }
+
+        #username-input:focus {
+            border-color: var(--accent-color);
+            background: #fff;
         }
     </style>
 </head>
 <body>
 
+<div id="game-container">
+
+    <!-- AUDIO BGM -->
+    <audio id="bgm" src="song.mp3" preload="auto"></audio>
+
+    <!-- 1. MAIN MENU -->
     <div id="main-menu">
-        <div class="logo-wrapper">
-            <img src="logo.png" alt="Logo Game" class="custom-logo-img">
-        </div>
-        <button class="btn" onclick="startGame()">PLAY</button>
-        <button class="btn btn-secondary" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
+        <h1 style="color: var(--accent-color); font-size: 32px; margin-bottom: 30px;">BEAT GAME</h1>
+        <button class="btn" onclick="startGame()">PLAY GAME</button>
+        <button class="btn" style="background:#eee; color:#555;" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
     </div>
 
-    <div id="leaderboard-modal">
-        <h2>Global Leaderboard</h2>
-        <div class="lb-list"></div>
-        <button class="btn btn-secondary" style="margin-top: 20px;" onclick="toggleLeaderboard(false)">CLOSE</button>
-    </div>
-
+    <!-- 2. GAME PLAY SCREEN -->
     <div id="game-screen">
-        <div id="hud">
-            <span id="score-display">000000</span>
-            <span id="combo-display">0x</span>
+        <div class="hud">
+            <div>SCORE: <span id="score">0</span></div>
+            <div>COMBO: <span id="combo">0</span></div>
         </div>
+
         <div id="judgment-text">PERFECT</div>
 
-        <div class="lanes-container">
-            <div class="lane" id="lane-0" ontouchstart="hitLane(0)" onclick="hitLane(0)"><div class="heart-key"></div></div>
-            <div class="lane" id="lane-1" ontouchstart="hitLane(1)" onclick="hitLane(1)"><div class="heart-key"></div></div>
-            <div class="lane" id="lane-2" ontouchstart="hitLane(2)" onclick="hitLane(2)"><div class="heart-key"></div></div>
-            <div class="lane" id="lane-3" ontouchstart="hitLane(3)" onclick="hitLane(3)"><div class="heart-key"></div></div>
+        <div class="track-container">
+            <div class="lane" onclick="hitLane(0)"><div class="heart-key">♥</div></div>
+            <div class="lane" onclick="hitLane(1)"><div class="heart-key">♥</div></div>
+            <div class="lane" onclick="hitLane(2)"><div class="heart-key">♥</div></div>
+            <div class="lane" onclick="hitLane(3)"><div class="heart-key">♥</div></div>
         </div>
     </div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+    <!-- 3. RESULT SCREEN (GAME OVER) -->
+    <div id="result-screen" style="display: none;">
+        <div class="result-box">
+            <h2 style="margin: 0; color: var(--accent-color);">GAME OVER</h2>
+            <div style="font-size: 12px; font-weight:800; color:#888; margin-top:10px;">TOTAL SCORE</div>
+            <div id="res-score" class="score-big">0</div>
 
-        try {
-            firebase.initializeApp(firebaseConfig);
-        } catch (e) {
-            console.log("Firebase belum diisi konfigurasi aslinya.");
-        }
+            <div class="stats-container">
+                <div class="stat-pill perfect">PERFECT <span id="res-perfect">0</span></div>
+                <div class="stat-pill good">GOOD <span id="res-good">0</span></div>
+                <div class="stat-pill miss">MISS <span id="res-miss">0</span></div>
+            </div>
 
-        const bgm = new Audio('music.mp3');
-        let score = 0;
-        let combo = 0;
-        let isPlaying = false;
-        
-        // Fallback beatmap bawaan jika beatmap.json gagal di-load
-        // Data Beatmap Penuh 52 Detik (Langsung ditanam di JavaScript)
+            <input type="text" id="username-input" placeholder="Masukkan Nama Kamu..." maxlength="12">
+            <button class="btn" onclick="saveScoreAndExit()">SUBMIT SCORE</button>
+        </div>
+    </div>
+
+    <!-- 4. LEADERBOARD MODAL -->
+    <div id="leaderboard-modal" style="display: none;">
+        <h2>LEADERBOARD</h2>
+        <div id="leaderboard-list" style="width:100%; max-height:300px; overflow-y:auto; margin: 20px 0;">
+            <p style="text-align:center;">Loading...</p>
+        </div>
+        <button class="btn" onclick="toggleLeaderboard(false)">KEMBALI</button>
+    </div>
+
+</div>
+
+<script>
+// --- INSIALISASI FIREBASE (Ganti Config Ini jika ada) ---
+const firebaseConfig = {
+    databaseURL: "https://YOUR_DATABASE_NAME.firebaseio.com"
+};
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+// --- VARIABEL GAME ---
+let score = 0;
+let combo = 0;
+let isPlaying = false;
+let gameInterval = null;
+
+let perfectCount = 0;
+let goodCount = 0;
+let missCount = 0;
+
+const bgm = document.getElementById('bgm');
+
+// --- DATA BEATMAP (52 DETIK) ---
 let beatmapData = [
-    { "timestamp": 500, "lane": 0 }, { "timestamp": 800, "lane": 1 }, { "timestamp": 1100, "lane": 2 }, { "timestamp": 1400, "lane": 3 },
-    { "timestamp": 2000, "lane": 1 }, { "timestamp": 2300, "lane": 2 }, { "timestamp": 2600, "lane": 0 }, { "timestamp": 2900, "lane": 3 },
-    { "timestamp": 3500, "lane": 0 }, { "timestamp": 3800, "lane": 1 }, { "timestamp": 4100, "lane": 2 }, { "timestamp": 4400, "lane": 3 },
-    { "timestamp": 5000, "lane": 2 }, { "timestamp": 5300, "lane": 1 }, { "timestamp": 5900, "lane": 0 }, { "timestamp": 6200, "lane": 2 },
-    { "timestamp": 6500, "lane": 1 }, { "timestamp": 6800, "lane": 3 }, { "timestamp": 7400, "lane": 0 }, { "timestamp": 7700, "lane": 3 },
-    { "timestamp": 8300, "lane": 1 }, { "timestamp": 8600, "lane": 2 }, { "timestamp": 8900, "lane": 1 }, { "timestamp": 9200, "lane": 2 },
-    { "timestamp": 9800, "lane": 0 }, { "timestamp": 10100, "lane": 3 }, { "timestamp": 10400, "lane": 1 }, { "timestamp": 10700, "lane": 2 },
-    { "timestamp": 11000, "lane": 0 }, { "timestamp": 11600, "lane": 1 }, { "timestamp": 11900, "lane": 3 }, { "timestamp": 12200, "lane": 2 },
-    { "timestamp": 12500, "lane": 0 }, { "timestamp": 13100, "lane": 1 }, { "timestamp": 13400, "lane": 2 }, { "timestamp": 13700, "lane": 3 },
-    { "timestamp": 14300, "lane": 0 }, { "timestamp": 14600, "lane": 1 }, { "timestamp": 14900, "lane": 2 }, { "timestamp": 15200, "lane": 3 },
-    { "timestamp": 15800, "lane": 2 }, { "timestamp": 16100, "lane": 1 }, { "timestamp": 16400, "lane": 0 }, { "timestamp": 17000, "lane": 3 },
-    { "timestamp": 17300, "lane": 2 }, { "timestamp": 17600, "lane": 1 }, { "timestamp": 18200, "lane": 0 }, { "timestamp": 18500, "lane": 1 },
-    { "timestamp": 18800, "lane": 2 }, { "timestamp": 19100, "lane": 3 }, { "timestamp": 19700, "lane": 2 }, { "timestamp": 20000, "lane": 1 },
-    { "timestamp": 20300, "lane": 0 }, { "timestamp": 20900, "lane": 1 }, { "timestamp": 21200, "lane": 2 }, { "timestamp": 21500, "lane": 3 },
-    { "timestamp": 22100, "lane": 0 }, { "timestamp": 22400, "lane": 2 }, { "timestamp": 22700, "lane": 1 }, { "timestamp": 23000, "lane": 3 },
-    { "timestamp": 23600, "lane": 0 }, { "timestamp": 23900, "lane": 1 }, { "timestamp": 24200, "lane": 2 }, { "timestamp": 24500, "lane": 3 },
-    { "timestamp": 25100, "lane": 2 }, { "timestamp": 25400, "lane": 1 }, { "timestamp": 25700, "lane": 0 }, { "timestamp": 26300, "lane": 3 },
-    { "timestamp": 26600, "lane": 2 }, { "timestamp": 26900, "lane": 1 }, { "timestamp": 27500, "lane": 0 }, { "timestamp": 27800, "lane": 1 },
-    { "timestamp": 28100, "lane": 2 }, { "timestamp": 28400, "lane": 3 }, { "timestamp": 29000, "lane": 2 }, { "timestamp": 29300, "lane": 1 },
-    { "timestamp": 29600, "lane": 0 }, { "timestamp": 30200, "lane": 1 }, { "timestamp": 30500, "lane": 2 }, { "timestamp": 30800, "lane": 3 },
-    { "timestamp": 31400, "lane": 0 }, { "timestamp": 31700, "lane": 2 }, { "timestamp": 32000, "lane": 1 }, { "timestamp": 32300, "lane": 3 },
-    { "timestamp": 32900, "lane": 0 }, { "timestamp": 33200, "lane": 1 }, { "timestamp": 33500, "lane": 2 }, { "timestamp": 33800, "lane": 3 },
-    { "timestamp": 34400, "lane": 2 }, { "timestamp": 34700, "lane": 1 }, { "timestamp": 35000, "lane": 0 }, { "timestamp": 35600, "lane": 3 },
-    { "timestamp": 35900, "lane": 2 }, { "timestamp": 36200, "lane": 1 }, { "timestamp": 36800, "lane": 0 }, { "timestamp": 37100, "lane": 1 },
-    { "timestamp": 37400, "lane": 2 }, { "timestamp": 37700, "lane": 3 }, { "timestamp": 38300, "lane": 2 }, { "timestamp": 38600, "lane": 1 },
-    { "timestamp": 38900, "lane": 0 }, { "timestamp": 39500, "lane": 1 }, { "timestamp": 39800, "lane": 2 }, { "timestamp": 40100, "lane": 3 },
-    { "timestamp": 40700, "lane": 0 }, { "timestamp": 41000, "lane": 2 }, { "timestamp": 41300, "lane": 1 }, { "timestamp": 41600, "lane": 3 },
-    { "timestamp": 42200, "lane": 0 }, { "timestamp": 42500, "lane": 1 }, { "timestamp": 42800, "lane": 2 }, { "timestamp": 43100, "lane": 3 },
-    { "timestamp": 43700, "lane": 2 }, { "timestamp": 44000, "lane": 1 }, { "timestamp": 44300, "lane": 0 }, { "timestamp": 44900, "lane": 3 },
-    { "timestamp": 45200, "lane": 2 }, { "timestamp": 45500, "lane": 1 }, { "timestamp": 46100, "lane": 0 }, { "timestamp": 46400, "lane": 1 },
-    { "timestamp": 46700, "lane": 2 }, { "timestamp": 47000, "lane": 3 }, { "timestamp": 47600, "lane": 2 }, { "timestamp": 47900, "lane": 1 },
-    { "timestamp": 48200, "lane": 0 }, { "timestamp": 48800, "lane": 1 }, { "timestamp": 49100, "lane": 2 }, { "timestamp": 49400, "lane": 3 },
-    { "timestamp": 50000, "lane": 0 }, { "timestamp": 50500, "lane": 1 }, { "timestamp": 51000, "lane": 2 }
+  { timestamp: 500, lane: 0 }, { timestamp: 800, lane: 1 }, { timestamp: 1100, lane: 2 }, { timestamp: 1400, lane: 3 },
+  { timestamp: 2000, lane: 1 }, { timestamp: 2300, lane: 2 }, { timestamp: 2600, lane: 0 }, { timestamp: 2900, lane: 3 },
+  { timestamp: 3500, lane: 0 }, { timestamp: 3800, lane: 1 }, { timestamp: 4100, lane: 2 }, { timestamp: 4400, lane: 3 },
+  { timestamp: 5000, lane: 2 }, { timestamp: 5300, lane: 1 }, { timestamp: 5900, lane: 0 }, { timestamp: 6200, lane: 2 },
+  { timestamp: 6500, lane: 1 }, { timestamp: 6800, lane: 3 }, { timestamp: 7400, lane: 0 }, { timestamp: 7700, lane: 3 },
+  { timestamp: 8300, lane: 1 }, { timestamp: 8600, lane: 2 }, { timestamp: 8900, lane: 1 }, { timestamp: 9200, lane: 2 },
+  { timestamp: 9800, lane: 0 }, { timestamp: 10100, lane: 3 }, { timestamp: 10400, lane: 1 }, { timestamp: 10700, lane: 2 },
+  { timestamp: 11000, lane: 0 }, { timestamp: 11600, lane: 1 }, { timestamp: 11900, lane: 3 }, { timestamp: 12200, lane: 2 },
+  { timestamp: 12500, lane: 0 }, { timestamp: 13100, lane: 1 }, { timestamp: 13400, lane: 2 }, { timestamp: 13700, lane: 3 },
+  { timestamp: 14300, lane: 0 }, { timestamp: 14600, lane: 1 }, { timestamp: 14900, lane: 2 }, { timestamp: 15200, lane: 3 },
+  { timestamp: 15800, lane: 2 }, { timestamp: 16100, lane: 1 }, { timestamp: 16400, lane: 0 }, { timestamp: 17000, lane: 3 },
+  { timestamp: 17300, lane: 2 }, { timestamp: 17600, lane: 1 }, { timestamp: 18200, lane: 0 }, { timestamp: 18500, lane: 1 },
+  { timestamp: 18800, lane: 2 }, { timestamp: 19100, lane: 3 }, { timestamp: 19700, lane: 2 }, { timestamp: 20000, lane: 1 },
+  { timestamp: 20300, lane: 0 }, { timestamp: 20900, lane: 1 }, { timestamp: 21200, lane: 2 }, { timestamp: 21500, lane: 3 },
+  { timestamp: 22100, lane: 0 }, { timestamp: 22400, lane: 2 }, { timestamp: 22700, lane: 1 }, { timestamp: 23000, lane: 3 },
+  { timestamp: 23600, lane: 0 }, { timestamp: 23900, lane: 1 }, { timestamp: 24200, lane: 2 }, { timestamp: 24500, lane: 3 },
+  { timestamp: 25100, lane: 2 }, { timestamp: 25400, lane: 1 }, { timestamp: 25700, lane: 0 }, { timestamp: 26300, lane: 3 },
+  { timestamp: 26600, lane: 2 }, { timestamp: 26900, lane: 1 }, { timestamp: 27500, lane: 0 }, { timestamp: 27800, lane: 1 },
+  { timestamp: 28100, lane: 2 }, { timestamp: 28400, lane: 3 }, { timestamp: 29000, lane: 2 }, { timestamp: 29300, lane: 1 },
+  { timestamp: 29600, lane: 0 }, { timestamp: 30200, lane: 1 }, { timestamp: 30500, lane: 2 }, { timestamp: 30800, lane: 3 },
+  { timestamp: 31400, lane: 0 }, { timestamp: 31700, lane: 2 }, { timestamp: 32000, lane: 1 }, { timestamp: 32300, lane: 3 },
+  { timestamp: 32900, lane: 0 }, { timestamp: 33200, lane: 1 }, { timestamp: 33500, lane: 2 }, { timestamp: 33800, lane: 3 },
+  { timestamp: 34400, lane: 2 }, { timestamp: 34700, lane: 1 }, { timestamp: 35000, lane: 0 }, { timestamp: 35600, lane: 3 },
+  { timestamp: 35900, lane: 2 }, { timestamp: 36200, lane: 1 }, { timestamp: 36800, lane: 0 }, { timestamp: 37100, lane: 1 },
+  { timestamp: 37400, lane: 2 }, { timestamp: 37700, lane: 3 }, { timestamp: 38300, lane: 2 }, { timestamp: 38600, lane: 1 },
+  { timestamp: 38900, lane: 0 }, { timestamp: 39500, lane: 1 }, { timestamp: 39800, lane: 2 }, { timestamp: 40100, lane: 3 },
+  { timestamp: 40700, lane: 0 }, { timestamp: 41000, lane: 2 }, { timestamp: 41300, lane: 1 }, { timestamp: 41600, lane: 3 },
+  { timestamp: 42200, lane: 0 }, { timestamp: 42500, lane: 1 }, { timestamp: 42800, lane: 2 }, { timestamp: 43100, lane: 3 },
+  { timestamp: 43700, lane: 2 }, { timestamp: 44000, lane: 1 }, { timestamp: 44300, lane: 0 }, { timestamp: 44900, lane: 3 },
+  { timestamp: 45200, lane: 2 }, { timestamp: 45500, lane: 1 }, { timestamp: 46100, lane: 0 }, { timestamp: 46400, lane: 1 },
+  { timestamp: 46700, lane: 2 }, { timestamp: 47000, lane: 3 }, { timestamp: 47600, lane: 2 }, { timestamp: 47900, lane: 1 },
+  { timestamp: 48200, lane: 0 }, { timestamp: 48800, lane: 1 }, { timestamp: 49100, lane: 2 }, { timestamp: 49400, lane: 3 },
+  { timestamp: 50000, lane: 0 }, { timestamp: 50500, lane: 1 }, { timestamp: 51000, lane: 2 }
 ];
 
-// Coba muat dari JSON jika ada, jika tidak ada tetap aman memakai data di atas
-fetch('beatmap.json')
-    .then(res => res.json())
-    .then(data => { beatmapData = data.beatmap; })
-    .catch(err => console.log("Menggunakan beatmap internal."));
-
-        // Memuat file JSON jika ada
-        fetch('beatmap.json')
-    .then(res => res.json())
-    .then(data => { 
-        beatmapData = data.beatmap;
-        console.log("Beatmap lagu penuh berhasil dimuat!", beatmapData.length, "note");
-    });
-
-        function toggleLeaderboard(show) {
-            document.getElementById('leaderboard-modal').style.display = show ? 'flex' : 'none';
-            if (show) loadLeaderboard();
-        }
-
-        function loadLeaderboard() {
-            const lbContainer = document.querySelector('.lb-list');
-            lbContainer.innerHTML = '<p style="text-align:center;">Loading...</p>';
-
-            try {
-                firebase.database().ref('leaderboard')
-                  .orderByChild('score')
-                  .limitToLast(10)
-                  .on('value', (snapshot) => {
-                      lbContainer.innerHTML = '';
-                      let players = [];
-                      snapshot.forEach((childSnapshot) => { players.push(childSnapshot.val()); });
-                      players.reverse();
-
-                      if (players.length === 0) {
-                          lbContainer.innerHTML = '<p style="text-align:center;">Belum ada skor.</p>';
-                          return;
-                      }
-
-                      players.forEach((player, index) => {
-                          const item = document.createElement('div');
-                          item.className = 'lb-item';
-                          item.innerHTML = `<span>${index + 1}. ${player.username}</span><span>${player.score.toLocaleString()}</span>`;
-                          lbContainer.appendChild(item);
-                      });
-                  });
-            } catch (err) {
-                lbContainer.innerHTML = '<p style="text-align:center;">Firebase belum terhubung.</p>';
-            }
-        }
-
-        function startGame() {
+// --- MULAI PERMAINAN ---
+function startGame() {
     document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'none';
     document.getElementById('game-screen').style.display = 'block';
     
     score = 0;
     combo = 0;
+    perfectCount = 0;
+    goodCount = 0;
+    missCount = 0;
+    
+    document.querySelectorAll('.note').forEach(n => n.remove());
+    beatmapData.forEach(n => n.spawned = false);
+
     isPlaying = true;
-    beatmapData.forEach(note => note.spawned = false);
     updateHUD();
 
-    // Pemutaran audio yang aman dari error
     bgm.currentTime = 0;
-    var playPromise = bgm.play();
-    
-    if (playPromise !== undefined) {
-        playPromise.then(() => {
-            requestAnimationFrame(gameLoop);
-        }).catch(error => {
-            console.warn("Audio tidak dapat diputar otomatis, game tetap berjalan:", error);
-            requestAnimationFrame(gameLoop);
-        });
-    }
-}
-        function gameLoop(timestamp) {
-    if (!isPlaying) return;
+    bgm.play().catch(() => {});
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawLanes();
+    if (gameInterval) clearInterval(gameInterval);
+    const startTime = Date.now();
 
-    const currentTime = bgm.currentTime * 1000; // milidetik
+    gameInterval = setInterval(() => {
+        if (!isPlaying) return;
 
-    // 1. Spawn Note Baru
-    beatmapData.forEach(note => {
-        if (!note.spawned && currentTime >= note.timestamp - 1500) {
-            notes.push({
-                lane: note.lane,
-                targetTime: note.timestamp,
-                y: 0,
-                hit: false
-            });
-            note.spawned = true;
-        }
-    });
+        const elapsedTime = Date.now() - startTime;
 
-    // 2. Update & Draw Note
-    for (let i = notes.length - 1; i >= 0; i--) {
-        const note = notes[i];
-        
-        // Hitung posisi Y berdasarkan waktu
-        const timeDiff = note.targetTime - currentTime;
-        note.y = hitLineY - (timeDiff * noteSpeed);
-
-       // Di dalam gameLoop(): Cek jika note sudah melewahi batas bawah layar (Auto MISS)
-const allNotes = document.querySelectorAll('.note');
-allNotes.forEach(note => {
-    const rect = note.getBoundingClientRect();
-    // Jika posisi note sudah melewati batas bawah layar HP/canvas
-    if (rect.top > window.innerHeight - 50) {
-        note.remove(); // Hapus dari DOM
-        triggerJudgment('MISS');
-    }
-});
-
-        // Gambar Note yang aktif
-        if (!note.hit && note.y >= 0 && note.y <= canvas.height) {
-            drawNote(note.lane, note.y);
-        }
-    }
-
-    // 3. Cek Penutupan Lagu jika Audio Berakhir
-    if (bgm.ended) {
-        endGame();
-        return;
-    }
-
-    requestAnimationFrame(gameLoop);
-}
-
-        function spawnNote(noteData) {
-            const laneElement = document.getElementById(`lane-${noteData.lane}`);
-            if (!laneElement) return;
-
-            const noteEl = document.createElement('div');
-            noteEl.className = 'note';
-            laneElement.appendChild(noteEl);
-
-            setTimeout(() => { noteEl.remove(); }, 1000);
-        }
-
-        function endGame() {
-            isPlaying = false;
-            const username = prompt(`Game Over! Skor Anda: ${score}\nMasukkan Nama/Username Anda:`) || "Anonymous";
-
-            try {
-                firebase.database().ref('leaderboard').push({
-                    username: username,
-                    score: score,
-                    timestamp: Date.now()
-                }).then(() => {
-                    toggleLeaderboard(true);
-                });
-            } catch(e) {
-                toggleLeaderboard(true);
+        // Spawn Note sesuai timestamp
+        beatmapData.forEach(note => {
+            if (!note.spawned && elapsedTime >= note.timestamp) {
+                spawnNoteDOM(note.lane);
+                note.spawned = true;
             }
+        });
 
-            document.getElementById('main-menu').style.display = 'flex';
-            document.getElementById('game-screen').style.display = 'none';
+        // Cek Note yang lolos lewat bawah (AUTO MISS)
+        document.querySelectorAll('.note').forEach(noteEl => {
+            const rect = noteEl.getBoundingClientRect();
+            if (rect.top > window.innerHeight - 70) {
+                noteEl.remove();
+                triggerJudgment('MISS');
+            }
+        });
+
+        // Selesai Musik
+        if (elapsedTime >= 53000) {
+            endGame();
         }
+    }, 50);
+}
 
-        function updateHUD() {
-            document.getElementById('score-display').innerText = score.toString().padStart(6, '0');
-            document.getElementById('combo-display').innerText = combo + 'x';
-        }
+function spawnNoteDOM(laneIndex) {
+    const lanes = document.querySelectorAll('.lane');
+    if (!lanes[laneIndex]) return;
 
-        function hitLane(laneIndex) {
+    const noteEl = document.createElement('div');
+    noteEl.className = 'note';
+    lanes[laneIndex].appendChild(noteEl);
+}
+
+// --- AKURASI DAN SENTUHAN TOMBOL ---
+function hitLane(laneIndex) {
     if (!isPlaying) return;
 
-    // 1. Ambil jalur/lane yang ditekan (0, 1, 2, atau 3)
     const lanes = document.querySelectorAll('.lane');
     const currentLane = lanes[laneIndex];
     if (!currentLane) return;
 
-    // 2. Cari semua note yang sedang meluncur di jalur ini
     const activeNotes = currentLane.querySelectorAll('.note');
 
-    // Jika pencet tapi tidak ada note di jalur tersebut = MISS
     if (activeNotes.length === 0) {
         triggerJudgment('MISS');
         return;
     }
 
-    // 3. Ambil note paling bawah (paling dekat tombol) & tombol hatinya
     const targetNote = activeNotes[0];
     const heartKey = currentLane.querySelector('.heart-key');
 
     if (!targetNote || !heartKey) return;
 
-    // 4. Hitung jarak piksel antara note dan tombol hati
     const noteRect = targetNote.getBoundingClientRect();
     const heartRect = heartKey.getBoundingClientRect();
 
@@ -609,11 +439,10 @@ allNotes.forEach(note => {
     const heartCenter = heartRect.top + (heartRect.height / 2);
     const distance = Math.abs(noteCenter - heartCenter);
 
-    // 5. Penilaian berdasarkan jarak (dalam piksel)
-    if (distance <= 45) {
-        targetNote.remove(); // Hapus note yang berhasil ditekan
+    if (distance <= 50) {
+        targetNote.remove();
         triggerJudgment('PERFECT');
-    } else if (distance <= 90) {
+    } else if (distance <= 100) {
         targetNote.remove();
         triggerJudgment('GOOD');
     } else {
@@ -621,109 +450,71 @@ allNotes.forEach(note => {
         triggerJudgment('MISS');
     }
 }
-      function triggerJudgment(type) {
+
+// --- SISTEM PENILAIAN & BATAS 5 MISS ---
+function triggerJudgment(type) {
     const el = document.getElementById('judgment-text');
-    el.innerText = type;
-    el.style.opacity = '1';
+    if (el) {
+        el.innerText = type;
+        el.style.opacity = '1';
+        setTimeout(() => { el.style.opacity = '0'; }, 300);
+    }
     
     if (type === 'PERFECT') {
-        el.style.color = '#ff5e97';
+        if (el) el.style.color = '#ff5e97';
         score += 1000;
         combo++;
         perfectCount++;
     } else if (type === 'GOOD') {
-        el.style.color = '#ffb800';
+        if (el) el.style.color = '#ffb800';
         score += 500;
         combo++;
         goodCount++;
     } else { // MISS
-        el.style.color = '#888888';
+        if (el) el.style.color = '#888888';
         combo = 0;
         missCount++;
 
-        // --- CEK BATAS MAXIMUM MISS (GAME OVER) ---
+        // BATAS MAX MISS = 5
         if (missCount >= 5) {
-            bgm.pause(); // Hentikan musik
-            endGame();   // Buka layar Game Over / Result Screen
+            endGame();
             return;
         }
     }
 
     updateHUD();
-    setTimeout(() => { el.style.opacity = '0'; }, 300);
-}
-        // Tambahkan variabel counter di bagian atas script
-let perfectCount = 0;
-let goodCount = 0;
-let missCount = 0;
-
-function startGame() {
-    document.getElementById('main-menu').style.display = 'none';
-    document.getElementById('result-screen').style.display = 'none';
-    document.getElementById('game-screen').style.display = 'block';
-    
-    // Reset hitungan
-    score = 0;
-    combo = 0;
-    perfectCount = 0;
-    goodCount = 0;
-    missCount = 0;
-    
-    isPlaying = true;
-    beatmapData.forEach(note => note.spawned = false);
-    updateHUD();
-
-    bgm.currentTime = 0;
-    bgm.play().then(() => {
-        requestAnimationFrame(gameLoop);
-    }).catch(err => {
-        requestAnimationFrame(gameLoop);
-    });
 }
 
-function triggerJudgment(type) {
-    const el = document.getElementById('judgment-text');
-    el.innerText = type;
-    el.style.opacity = '1';
-    
-    // Hitung statistik penilaian
-    if (type === 'PERFECT') {
-        el.style.color = '#ff5e97';
-        score += 1000;
-        combo++;
-        perfectCount++;
-    } else if (type === 'GOOD') {
-        el.style.color = '#ffb800';
-        score += 500;
-        combo++;
-        goodCount++;
-    } else {
-        el.style.color = '#888888';
-        combo = 0;
-        missCount++;
-    }
-
-    updateHUD();
-    setTimeout(() => { el.style.opacity = '0'; }, 300);
+function updateHUD() {
+    const scoreEl = document.getElementById('score');
+    const comboEl = document.getElementById('combo');
+    if (scoreEl) scoreEl.innerText = score.toLocaleString();
+    if (comboEl) comboEl.innerText = combo;
 }
 
-// Tampilkan layar hasil saat lagu habis
+// --- LAYAR RESULT / GAME OVER ---
 function endGame() {
     isPlaying = false;
+    clearInterval(gameInterval);
+    bgm.pause();
+
     document.getElementById('game-screen').style.display = 'none';
     
-    // Isi data ke modal result screen
     document.getElementById('res-score').innerText = score.toLocaleString();
     document.getElementById('res-perfect').innerText = perfectCount;
     document.getElementById('res-good').innerText = goodCount;
     document.getElementById('res-miss').innerText = missCount;
     
+    const inputEl = document.getElementById('username-input');
+    if (inputEl) inputEl.value = '';
+    
     document.getElementById('result-screen').style.display = 'flex';
 }
 
-// Simpan ke Firebase setelah menekan tombol SUBMIT SCORE
+// --- SIMPAN SKOR KE FIREBASE ---
 function saveScoreAndExit() {
-    const username = prompt(`Masukkan Nama/Username Anda:`) || "Anonymous";
+    const inputEl = document.getElementById('username-input');
+    const username = (inputEl && inputEl.value.trim() !== "") ? inputEl.value.trim() : "Player";
 
     try {
         firebase.database().ref('leaderboard').push({
@@ -736,67 +527,56 @@ function saveScoreAndExit() {
         }).then(() => {
             document.getElementById('result-screen').style.display = 'none';
             toggleLeaderboard(true);
+        }).catch(() => {
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('main-menu').style.display = 'flex';
         });
     } catch(e) {
         document.getElementById('result-screen').style.display = 'none';
         document.getElementById('main-menu').style.display = 'flex';
     }
 }
-        // Membuka UI Result Screen tanpa alert/prompt browser
-function endGame() {
-    isPlaying = false;
-    document.getElementById('game-screen').style.display = 'none';
-    
-    // Setel angka hasil permainan
-    document.getElementById('res-score').innerText = score.toLocaleString();
-    document.getElementById('res-perfect').innerText = perfectCount;
-    document.getElementById('res-good').innerText = goodCount;
-    document.getElementById('res-miss').innerText = missCount;
-    
-    // Reset isi input nama
-    document.getElementById('username-input').value = '';
-    
-    // Tampilkan modal hasil
-    document.getElementById('result-screen').style.display = 'flex';
-}
 
-// Menyimpan ke Firebase menggunakan input kustom dari UI
-function saveScoreAndExit() {
-    const inputVal = document.getElementById('username-input').value.trim();
-    const username = inputVal !== "" ? inputVal : "Player";
+// --- LEADERBOARD MODAL TOGGLE ---
+function toggleLeaderboard(show) {
+    const modal = document.getElementById('leaderboard-modal');
+    document.getElementById('main-menu').style.display = 'none';
+    modal.style.display = show ? 'flex' : 'none';
 
-    const submitBtn = document.querySelector('#result-screen .btn');
-    submitBtn.innerText = "SAVING...";
-    submitBtn.disabled = true;
+    if (!show) {
+        document.getElementById('main-menu').style.display = 'flex';
+        return;
+    }
 
-    // Simpan ke Firebase Realtime Database
+    // Ambil Data Leaderboard dari Firebase
+    const listEl = document.getElementById('leaderboard-list');
+    listEl.innerHTML = "<p style='text-align:center;'>Loading...</p>";
+
     try {
-        firebase.database().ref('leaderboard').push({
-            username: username,
-            score: score,
-            perfect: perfectCount,
-            good: goodCount,
-            miss: missCount,
-            timestamp: Date.now()
-        }).then(() => {
-            submitBtn.innerText = "SUBMIT SCORE";
-            submitBtn.disabled = false;
-            document.getElementById('result-screen').style.display = 'none';
-            toggleLeaderboard(true); // Langsung buka halaman leaderboard
-        }).catch(() => {
-            fallbackExit(submitBtn);
+        firebase.database().ref('leaderboard').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+            let html = "";
+            let dataArr = [];
+            snapshot.forEach(child => { dataArr.push(child.val()); });
+            dataArr.reverse(); // Urutkan skor tertinggi
+
+            if (dataArr.length === 0) {
+                html = "<p style='text-align:center;'>Belum ada skor tersimpan.</p>";
+            } else {
+                dataArr.forEach((item, index) => {
+                    html += `
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
+                            <span>#${index+1} <b>${item.username}</b></span>
+                            <span style="color:var(--accent-color); font-weight:bold;">${item.score.toLocaleString()}</span>
+                        </div>
+                    `;
+                });
+            }
+            listEl.innerHTML = html;
         });
     } catch(e) {
-        fallbackExit(submitBtn);
+        listEl.innerHTML = "<p style='text-align:center;'>Gagal memuat leaderboard.</p>";
     }
 }
-
-function fallbackExit(btn) {
-    btn.innerText = "SUBMIT SCORE";
-    btn.disabled = false;
-    document.getElementById('result-screen').style.display = 'none';
-    document.getElementById('main-menu').style.display = 'flex';
-}
-    </script>
+</script>
 </body>
 </html>
