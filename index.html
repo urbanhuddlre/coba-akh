@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Vertical Mobile Rhythm Game</title>
+  
+  <style>
+    @font-face {
+      font-family: 'Hillios';
+      src: url('assets/fonts/Hillios.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #111111;
+      --lane-color-0: #ff2a6d;
+      --lane-color-1: #05d9e8;
+      --lane-color-2: #ffb800;
+      --lane-color-3: #00ff66;
+      --ui-accent: #111111;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-color);
+      font-family: 'Hillios', sans-serif, Arial;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      max-width: 450px;
+      max-height: 850px;
+      background: #ffffff;
+      border: 1px solid #eeeeee;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header & Logo */
+    #header {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 15px;
+      border-bottom: 2px solid #f0f0f0;
+      z-index: 5;
+    }
+
+    #logo-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #game-logo {
+      height: 35px;
+      max-width: 120px;
+      object-fit: contain;
+    }
+
+    #score-display {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--text-color);
+    }
+
+    /* Stage Canvas */
+    #canvas-wrapper {
+      position: relative;
+      flex: 1;
+      width: 100%;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Bottom Touch Buttons (Hidden by default, shown when playing) */
+    #touch-controls {
+      height: 100px;
+      display: flex;
+      border-top: 2px solid #f0f0f0;
+      background: #fafafa;
+      transition: height 0.3s ease, opacity 0.3s ease;
+    }
+
+    #touch-controls.hidden-controls {
+      height: 0px;
+      opacity: 0;
+      pointer-events: none;
+      border: none;
+    }
+
+    .touch-btn {
+      flex: 1;
+      border: none;
+      outline: none;
+      cursor: pointer;
+    }
+    .touch-btn:active { opacity: 0.6; }
+    .btn-0 { background-color: var(--lane-color-0); }
+    .btn-1 { background-color: var(--lane-color-1); }
+    .btn-2 { background-color: var(--lane-color-2); }
+    .btn-3 { background-color: var(--lane-color-3); }
+
+    /* Overlays */
+    .overlay-screen {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255, 255, 255, 0.98);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 10;
+    }
+
+    .hidden { display: none !important; }
+
+    .menu-btn {
+      margin: 10px 0;
+      padding: 16px 32px;
+      width: 75%;
+      font-family: 'Hillios', sans-serif;
+      font-size: 1.3rem;
+      font-weight: bold;
+      background: var(--ui-accent);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .leaderboard-list {
+      width: 100%;
+      max-height: 280px;
+      overflow-y: auto;
+      margin: 15px 0;
+      padding: 0;
+      list-style: none;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    .leaderboard-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+      color: #333;
+    }
+  </style>
+
+  <!-- Firebase Integration -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    signInAnonymously(auth).catch(() => {});
+
+    window.submitGlobalScore = async function(name, score) {
+      try {
+        await addDoc(collection(db, "leaderboard"), {
+          name: name || "Player",
+          score: score,
+          timestamp: new Date()
+        });
+      } catch(e) {
+        console.error(e);
+      }
+    };
+
+    window.fetchGlobalLeaderboard = async function() {
+      const listEl = document.getElementById('leaderboard-data');
+      listEl.innerHTML = '<li class="leaderboard-item">Loading...</li>';
+      try {
+        const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(10));
+        const snapshot = await getDocs(q);
+        listEl.innerHTML = '';
+        let rank = 1;
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          listEl.innerHTML += `
+            <li class="leaderboard-item">
+              <span>#${rank++} ${data.name}</span>
+              <strong>${data.score}</strong>
+            </li>`;
+        });
+      } catch(e) {
+        listEl.innerHTML = '<li class="leaderboard-item">Connect Firebase Config to view</li>';
+      }
+    };
+  </script>
+</head>
+<body>
+
+  <div id="game-container">
+    <div id="header">
+      <div id="logo-container">
+        <img id="game-logo" src="assets/logo.png" alt="Logo" onerror="this.style.display='none'">
+      </div>
+      <span id="score-display">SCORE: 0</span>
+    </div>
+
+    <div id="canvas-wrapper">
+      <canvas id="rhythm-canvas"></canvas>
+
+      <!-- Main Menu -->
+      <div id="start-menu" class="overlay-screen">
+        <h1 style="color:#111; margin-bottom: 30px; font-size: 2.2rem;">RHYTHM</h1>
+        <button class="menu-btn" onclick="startGame()">PLAY</button>
+        <button class="menu-btn" onclick="openLeaderboard()">SCORES</button>
+      </div>
+
+      <!-- Leaderboard Screen -->
+      <div id="leaderboard-menu" class="overlay-screen hidden">
+        <h2>TOP SCORES</h2>
+        <ul id="leaderboard-data" class="leaderboard-list"></ul>
+        <button class="menu-btn" onclick="closeLeaderboard()">BACK</button>
+      </div>
+
+      <!-- Game Over Screen -->
+      <div id="gameover-menu" class="overlay-screen hidden">
+        <h2>GAME OVER</h2>
+        <p id="final-score" style="font-size: 1.2rem;">Score: 0</p>
+        <input type="text" id="player-name" placeholder="Enter Name" style="padding:12px; width:75%; margin-bottom:12px; font-size: 1rem; text-align:center;">
+        <button class="menu-btn" onclick="saveScore()">SUBMIT</button>
+        <button class="menu-btn" onclick="showMenu()">MENU</button>
+      </div>
+    </div>
+
+    <!-- Bottom Touch Buttons (Hidden on Load) -->
+    <div id="touch-controls" class="hidden-controls">
+      <button class="touch-btn btn-0" id="btn-lane-0"></button>
+      <button class="touch-btn btn-1" id="btn-lane-1"></button>
+      <button class="touch-btn btn-2" id="btn-lane-2"></button>
+      <button class="touch-btn btn-3" id="btn-lane-3"></button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('rhythm-canvas');
+    const ctx = canvas.getContext('2d');
+    
+    let score = 0;
+    let isPlaying = false;
+    let notes = [];
+    let startTime = 0;
+
+    // Spaced Beatmap Timings
+    const beatmap = [
+      { time: 1.0, lane: 0 },
+      { time: 1.5, lane: 1 },
+      { time: 2.0, lane: 2 },
+      { time: 2.5, lane: 3 },
+      { time: 3.2, lane: 1 },
+      { time: 3.9, lane: 2 },
+      { time: 4.6, lane: 0 },
+      { time: 5.3, lane: 3 }
+    ];
+
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const keyMap = { 'd': 0, 'f': 1, 'j': 2, 'k': 3 };
+    window.addEventListener('keydown', (e) => {
+      const lane = keyMap[e.key.toLowerCase()];
+      if (lane !== undefined) triggerLane(lane);
+    });
+
+    [0, 1, 2, 3].forEach(lane => {
+      const btn = document.getElementById(`btn-lane-${lane}`);
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        triggerLane(lane);
+      });
+      btn.addEventListener('mousedown', () => triggerLane(lane));
+    });
+
+    function triggerLane(laneIndex) {
+      if (!isPlaying) return;
+      const hitLineY = canvas.height - 40;
+      
+      for (let i = 0; i < notes.length; i++) {
+        const note = notes[i];
+        if (note.lane === laneIndex && !note.hit) {
+          if (Math.abs(note.y - hitLineY) < 55) {
+            note.hit = true;
+            score += 100;
+            document.getElementById('score-display').innerText = 'SCORE: ' + score;
+            break;
+          }
+        }
+      }
+    }
+
+    // Canvas Rounded Rectangle Helper for Spaced Notes
+    function drawRoundedRect(ctx, x, y, width, height, radius, color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function startGame() {
+      document.getElementById('start-menu').classList.add('hidden');
+      document.getElementById('gameover-menu').classList.add('hidden');
+      
+      // Reveal lane 0-3 touch buttons when game starts
+      document.getElementById('touch-controls').classList.remove('hidden-controls');
+      
+      setTimeout(resizeCanvas, 300); // Recalculate stage height after controls transition
+
+      score = 0;
+      document.getElementById('score-display').innerText = 'SCORE: 0';
+      notes = beatmap.map(n => ({ ...n, hit: false, y: 0 }));
+      startTime = performance.now();
+      isPlaying = true;
+      requestAnimationFrame(gameLoop);
+    }
+
+    function gameLoop(timestamp) {
+      if (!isPlaying) return;
+
+      const elapsedTime = (timestamp - startTime) / 1000;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const laneWidth = canvas.width / 4;
+      const hitLineY = canvas.height - 40;
+
+      // Vertical Lanes
+      for (let i = 0; i < 4; i++) {
+        ctx.strokeStyle = '#f2f2f2';
+        ctx.strokeRect(i * laneWidth, 0, laneWidth, canvas.height);
+      }
+
+      // Hit Target Line
+      ctx.fillStyle = '#111111';
+      ctx.fillRect(0, hitLineY, canvas.width, 4);
+
+      // Spaced Rounded Note Loop
+      const colors = ['#ff2a6d', '#05d9e8', '#ffb800', '#00ff66'];
+      notes.forEach(note => {
+        if (!note.hit) {
+          const speed = 320;
+          const timeUntilHit = note.time - elapsedTime;
+          note.y = hitLineY - (timeUntilHit * speed);
+
+          if (note.y > -30 && note.y < canvas.height + 30) {
+            // Note spacing: padding of 8px on left/right, height of 24px with 6px border radius
+            drawRoundedRect(
+              ctx,
+              note.lane * laneWidth + 8,
+              note.y - 12,
+              laneWidth - 16,
+              24,
+              6,
+              colors[note.lane]
+            );
+          }
+        }
+      });
+
+      if (elapsedTime > beatmap[beatmap.length - 1].time + 2) {
+        endGame();
+        return;
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function endGame() {
+      isPlaying = false;
+      document.getElementById('touch-controls').classList.add('hidden-controls');
+      document.getElementById('final-score').innerText = 'Score: ' + score;
+      document.getElementById('gameover-menu').classList.remove('hidden');
+    }
+
+    function showMenu() {
+      document.getElementById('gameover-menu').classList.add('hidden');
+      document.getElementById('start-menu').classList.remove('hidden');
+      document.getElementById('touch-controls').classList.add('hidden-controls');
+    }
+
+    function openLeaderboard() {
+      document.getElementById('start-menu').classList.add('hidden');
+      document.getElementById('leaderboard-menu').classList.remove('hidden');
+      if (window.fetchGlobalLeaderboard) window.fetchGlobalLeaderboard();
+    }
+
+    function closeLeaderboard() {
+      document.getElementById('leaderboard-menu').classList.add('hidden');
+      document.getElementById('start-menu').classList.remove('hidden');
+    }
+
+    function saveScore() {
+      const name = document.getElementById('player-name').value;
+      if (window.submitGlobalScore) {
+        window.submitGlobalScore(name, score);
+      }
+      showMenu();
+    }
+  </script>
+</body>
+</html>
