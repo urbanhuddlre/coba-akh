@@ -286,7 +286,7 @@ h1 {
         <div class="logo-wrapper">
             <img src="logo.png" alt="Logo Game" class="logo.png">
         </div>
-        <h1 style="font-family: 'Hillios', sans-serif; color: var(--accent-color); font-size: 36px; margin-bottom: 25px; margin-top: 0;">TUH Eearly Pass</h1>
+        <h1 style="font-family: 'Hillios', sans-serif; color: var(--accent-color); font-size: 36px; margin-bottom: 25px; margin-top: 0;">TUH Early Pass</h1>
         <button class="btn" onclick="startGame()">PLAY GAME</button>
         <button class="btn" style="background:#eee; color:#555;" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
     </div>
@@ -361,11 +361,12 @@ const firebaseConfig = {
 let score = 0;
 let combo = 0;
 let isPlaying = false;
+let isPaused = false; // Pastikan variabel ini ada di sini
 let gameInterval = null;
-
 let perfectCount = 0;
 let goodCount = 0;
 let missCount = 0;
+window.pausedElapsedTime = 0;
 
 const bgm = document.getElementById('bgm');
 
@@ -417,28 +418,30 @@ function startGame() {
     perfectCount = 0;
     goodCount = 0;
     missCount = 0;
+    isPaused = false; // Reset status pause saat game baru mulai
+
+    const pauseBtn = document.getElementById('pause-btn');
+    if (pauseBtn) pauseBtn.innerText = "PAUSE";
     
     document.querySelectorAll('.note').forEach(n => n.remove());
     beatmapData.forEach(n => n.spawned = false);
 
     isPlaying = true;
-    update();
+    updateHUD();
 
-    bgm.currentTime = 0;
-    bgm.play().catch(() => {});
+    if (bgm) {
+        bgm.currentTime = 0;
+        bgm.play().catch(() => {});
+    }
 
     if (gameInterval) clearInterval(gameInterval);
     const startTime = Date.now();
-    
-    window.pausedElapsedTime = 0;
-const startTime = Date.now();
 
     gameInterval = setInterval(() => {
-        if (!isPlaying) return;
+        if (!isPlaying || isPaused) return;
 
         const elapsedTime = Date.now() - startTime;
 
-        // Spawn Note sesuai timestamp
         beatmapData.forEach(note => {
             if (!note.spawned && elapsedTime >= note.timestamp) {
                 spawnNoteDOM(note.lane);
@@ -446,6 +449,19 @@ const startTime = Date.now();
             }
         });
 
+        document.querySelectorAll('.note').forEach(noteEl => {
+            const rect = noteEl.getBoundingClientRect();
+            if (rect.top > window.innerHeight - 50) {
+                noteEl.remove();
+                triggerJudgment('MISS');
+            }
+        });
+
+        if (elapsedTime >= 53000) {
+            endGame();
+        }
+    }, 50);
+}
        // 1. Bagian saat note terlewat sampai bawah layar (di dalam gameInterval)
 document.querySelectorAll('.note').forEach(noteEl => {
     const rect = noteEl.getBoundingClientRect();
