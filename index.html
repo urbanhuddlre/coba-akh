@@ -338,15 +338,15 @@
   // Your web app's Firebase configuration
   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
   const firebaseConfig = {
-    apiKey: "AIzaSyD2LJ3NNzgEN7YlyjAFka9Go1l0bqEIIHU",
-    authDomain: "tuh-ep.firebaseapp.com",
-    databaseURL: "https://tuh-ep-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "tuh-ep",
-    storageBucket: "tuh-ep.firebasestorage.app",
-    messagingSenderId: "589222410670",
-    appId: "1:589222410670:web:33ae142faf41093024b03f",
-    measurementId: "G-7W5FXE0597"
-  };
+  apiKey: "AIzaSyD2LJ3NNzgEN7YlyjAFka9Go1l0bqEIIHU",
+  authDomain: "tuh-ep.firebaseapp.com",
+  databaseURL: "https://tuh-ep-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "tuh-ep",
+  storageBucket: "tuh-ep.firebasestorage.app",
+  messagingSenderId: "589222410670",
+  appId: "1:589222410670:web:33ae142faf41093024b03f",
+  measurementId: "G-7W5FXE0597"
+};
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
@@ -619,13 +619,28 @@ function toggleLeaderboard(show) {
             snapshot.forEach(child => { dataArr.push(child.val()); });
 
             if (dataArr.length === 0) {
-                // Ambil dari localStorage jika Firebase kosong
                 dataArr = JSON.parse(localStorage.getItem('tuh_leaderboard') || '[]');
             }
 
-            renderLeaderboardList(dataArr, listEl);
+            let html = "";
+            // Urutkan dari skor tertinggi ke terendah (Global Leaderboard)
+            dataArr.sort((a, b) => b.score - a.score);
+
+            if (dataArr.length === 0) {
+                html = "<p style='text-align:center;'>Belum ada skor tersimpan.</p>";
+            } else {
+                // Menampilkan seluruh pemain global (tanpa .slice(0, 10) agar semua bisa lihat)
+                dataArr.forEach((item, index) => {
+                    html += `
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
+                            <span>#${index+1} <b>${item.username}</b></span>
+                            <span style="color:var(--accent-color); font-weight:bold;">${item.score.toLocaleString()}</span>
+                        </div>
+                    `;
+                });
+            }
+            listEl.innerHTML = html;
         }, (error) => {
-            console.warn("Firebase fetch error, loading local data:", error);
             let dataArr = JSON.parse(localStorage.getItem('tuh_leaderboard') || '[]');
             renderLeaderboardList(dataArr, listEl);
         });
@@ -634,7 +649,6 @@ function toggleLeaderboard(show) {
         renderLeaderboardList(dataArr, listEl);
     }
 }
-
 function renderLeaderboardList(dataArr, listEl) {
     let html = "";
     dataArr.sort((a, b) => b.score - a.score);
