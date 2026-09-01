@@ -3,27 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TUH EP</title>
+    <title>TUH Early Pass</title>
     
+    <!-- Firebase App & Database SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
         @font-face {
-    font-family: 'Hillios';
-    src: url('Hillios.otf') format('opentype'); /* Sesuaikan dengan nama file & ekstensi asli */
-}
+            font-family: 'Hillios';
+            src: url('Hillios.otf') format('opentype');
+        }
 
-h1 {
-    font-family: 'Hillios', sans-serif !important;
-}
+        h1 {
+            font-family: 'Hillios', sans-serif !important;
+        }
+
         :root {
             --accent-color: #e95500;
             --bg-color: #f6f6f9;
-            --text-color: #adc642;
+            --text-color: #555555;
             --lane-color: #ffee9b;
         }
-
 
         * {
             box-sizing: border-box;
@@ -72,7 +73,7 @@ h1 {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            filter: drop-shadow(0 4px 10px rgba(255, 94, 151, 0.3));
+            filter: drop-shadow(0 4px 10px rgba(233, 85, 0, 0.3));
         }
 
         .logo-wrapper.small {
@@ -110,7 +111,7 @@ h1 {
             font-weight: 800;
             border-radius: 25px;
             cursor: pointer;
-            box-shadow: 0 8px 15px rgba(255, 94, 151, 0.3);
+            box-shadow: 0 8px 15px rgba(233, 85, 0, 0.3);
             transition: transform 0.1s;
             margin: 8px 0;
             width: 80%;
@@ -125,15 +126,15 @@ h1 {
             top: 20px; left: 20px; right: 20px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
             font-weight: 800;
-            font-size: 16px;
+            font-size: 18px;
+            color: var(--accent-color);
             z-index: 10;
         }
 
         #judgment-text {
             position: absolute;
-            top: 35%; left: 50%;
+            top: 40%; left: 50%;
             transform: translate(-50%, -50%);
             font-size: 32px;
             font-weight: 900;
@@ -175,12 +176,7 @@ h1 {
             font-size: 20px;
             color: var(--accent-color);
             background: white;
-            box-shadow: 0 4px 10px rgba(255, 94, 151, 0.2);
-        }
-
-        .heart-key:active {
-            background: var(--accent-color);
-            color: white;
+            box-shadow: 0 4px 10px rgba(233, 85, 0, 0.2);
         }
 
         .heart-key.active-press {
@@ -188,8 +184,9 @@ h1 {
             color: white !important;
             transform: translateX(-50%) scale(1.15) !important;
             box-shadow: 0 0 20px var(--accent-color) !important;
+            transition: transform 0.05s ease, background 0.05s ease;
         }
-
+        
         .note {
             position: absolute;
             width: 36px;
@@ -197,7 +194,7 @@ h1 {
             left: calc(50% - 18px);
             background: var(--accent-color);
             border-radius: 50%;
-            box-shadow: 0 0 10px rgba(255, 94, 151, 0.5);
+            box-shadow: 0 0 10px rgba(233, 85, 0, 0.5);
             animation: fall 2.5s linear forwards;
         }
 
@@ -209,28 +206,25 @@ h1 {
         .result-box {
             background: #ffffff;
             border: 2px solid #f0f0f5;
-            padding: 25px 20px;
+            padding: 30px 24px;
             border-radius: 30px;
             width: 85%;
             max-width: 360px;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(255, 94, 151, 0.15);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            box-shadow: 0 20px 40px rgba(233, 85, 0, 0.15);
         }
 
         .score-big {
             font-size: 36px;
             font-weight: 900;
             margin: 5px 0 15px 0;
+            color: var(--accent-color);
         }
 
         .stats-container {
             display: flex;
             justify-content: space-between;
             gap: 8px;
-            width: 100%;
             margin-bottom: 20px;
         }
 
@@ -247,7 +241,7 @@ h1 {
         }
 
         .stat-pill span { font-size: 18px; }
-        .stat-pill.perfect { color: #ff5e97; }
+        .stat-pill.perfect { color: #e95500; }
         .stat-pill.good { color: #ffb800; }
         .stat-pill.miss { color: #888888; }
 
@@ -279,7 +273,7 @@ h1 {
     <!-- 1. MAIN MENU -->
     <div id="main-menu">
         <div class="logo-wrapper">
-            <img src="logo.png" alt="Logo" onerror="this.parentElement.style.display='none'">
+            <img src="logo.png" alt="Logo Game" onerror="this.style.display='none'">
         </div>
         <button class="btn" onclick="startGame()">PLAY GAME</button>
         <button class="btn" style="background:#eee; color:#555;" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
@@ -302,13 +296,10 @@ h1 {
         </div>
     </div>
 
-    <!-- 3. RESULT SCREEN (GAME OVER) -->
+    <!-- 3. RESULT SCREEN -->
     <div id="result-screen" style="display: none;">
         <div class="result-box">
-            <div class="logo-wrapper small">
-                <img src="logo.png" alt="Logo" onerror="this.parentElement.style.display='none'">
-            </div>
-            <h2 style="margin: 0; color: var(--accent-color);">GAME OVER</h2>
+            <h2 id="result-title" style="margin: 0; color: var(--accent-color);">CONGRATS!</h2>
             <div style="font-size: 12px; font-weight:800; color:#888; margin-top:10px;">TOTAL SCORE</div>
             <div id="res-score" class="score-big">0</div>
 
@@ -323,7 +314,7 @@ h1 {
         </div>
     </div>
 
-    -- 4. LEADERBOARD MODAL -->
+    <!-- 4. LEADERBOARD MODAL -->
     <div id="leaderboard-modal" style="display: none;">
         <div class="result-box" style="max-width: 400px; max-height: 80vh;">
             <h2 style="margin: 0 0 15px 0; color: var(--accent-color);">LEADERBOARD</h2>
@@ -334,9 +325,10 @@ h1 {
         </div>
     </div>
 
+</div>
+
 <script>
-        // 2. Letakkan konfigurasi Firebase di bagian paling atas blok script game
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyD8sLyanphP9Y2ZY8MWmDpsBBOcCegMW08",
   authDomain: "urbanhudlde.firebaseapp.com",
@@ -410,7 +402,7 @@ function startGame() {
     beatmapData.forEach(n => n.spawned = false);
 
     isPlaying = true;
-    updateHUD();
+    update();
 
     if (bgm) {
         bgm.currentTime = 0;
@@ -441,7 +433,7 @@ function startGame() {
         });
 
         if (elapsedTime >= 53000) {
-            endGame();
+            endGame('congrats');
         }
     }, 50);
 }
@@ -498,7 +490,7 @@ function triggerJudgment(type) {
     if (type === 'PERFECT') {
         if (el) {
             el.innerText = 'PERFECT';
-            el.style.color = '#ff5e97';
+            el.style.color = '#e95500';
             el.style.opacity = '1';
             setTimeout(() => { el.style.opacity = '0'; }, 200);
         }
@@ -512,7 +504,7 @@ function triggerJudgment(type) {
             el.style.opacity = '1';
             setTimeout(() => { el.style.opacity = '0'; }, 200);
         }
-        score += 100;
+        score += 50;
         combo++;
         goodCount++;
     } else {
@@ -526,28 +518,35 @@ function triggerJudgment(type) {
         missCount++;
 
         if (missCount >= 15) {
-            endGame();
+            endGame('gameover');
             return;
         }
     }
 
-    updateHUD();
+    update();
 }
 
-function updateHUD() {
+function update() {
     const scoreEl = document.getElementById('score');
     const comboEl = document.getElementById('combo');
     if (scoreEl) scoreEl.innerText = score.toLocaleString();
     if (comboEl) comboEl.innerText = combo;
 }
 
-function endGame() {
+function endGame(status) {
     isPlaying = false;
     clearInterval(gameInterval);
     if (bgm) bgm.pause();
 
     document.getElementById('game-screen').style.display = 'none';
     
+    const titleEl = document.getElementById('result-title');
+    if (status === 'congrats') {
+        titleEl.innerText = "CONGRATS!";
+    } else {
+        titleEl.innerText = "GAME OVER";
+    }
+
     document.getElementById('res-score').innerText = score.toLocaleString();
     document.getElementById('res-perfect').innerText = perfectCount;
     document.getElementById('res-good').innerText = goodCount;
@@ -606,7 +605,7 @@ function toggleLeaderboard(show) {
             } else {
                 dataArr.forEach((item, index) => {
                     html += `
-                        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
                             <span>#${index+1} <b>${item.username}</b></span>
                             <span style="color:var(--accent-color); font-weight:bold;">${item.score.toLocaleString()}</span>
                         </div>
