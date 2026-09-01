@@ -328,18 +328,31 @@
 </div>
 
 <script>
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyD8sLyanphP9Y2ZY8MWmDpsBBOcCegMW08",
-  authDomain: "urbanhudlde.firebaseapp.com",
-  databaseURL: "https://urbanhudlde-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "urbanhudlde",
-  storageBucket: "urbanhudlde.firebasestorage.app",
-  messagingSenderId: "992493553966",
-  appId: "1:992493553966:web:7440d47c1797356c8092bf",
-  measurementId: "G-K3NS4CWZHR"
-};
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyD8sLyanphP9Y2ZY8MWmDpsBBOcCegMW08",
+    authDomain: "urbanhudlde.firebaseapp.com",
+    databaseURL: "https://urbanhudlde-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "urbanhudlde",
+    storageBucket: "urbanhudlde.firebasestorage.app",
+    messagingSenderId: "992493553966",
+    appId: "1:992493553966:web:7440d47c1797356c8092bf",
+    measurementId: "G-K3NS4CWZHR"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+    
+<script>
 let score = 0;
 let combo = 0;
 let isPlaying = false;
