@@ -557,9 +557,7 @@ function endGame(status) {
     const titleEl = document.getElementById('result-title');
     if (status === 'congrats') {
         titleEl.innerText = "CONGRATS!";
-    } else {
-        titleEl.innerText = "GAME OVER";
-    }
+    } 
 
     document.getElementById('res-score').innerText = score.toLocaleString();
     document.getElementById('res-perfect').innerText = perfectCount;
