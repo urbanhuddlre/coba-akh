@@ -163,7 +163,7 @@
 
         .heart-key {
             position: absolute;
-            bottom: 40px;
+            bottom: 120px; /* Diubah dari 40px menjadi lebih tinggi agar naik ke atas */
             left: 50%;
             transform: translateX(-50%);
             width: 50px;
@@ -178,7 +178,7 @@
             background: white;
             box-shadow: 0 4px 10px rgba(255, 94, 151, 0.2);
         }
-
+        
         .heart-key:active {
             background: var(--accent-color);
             color: white;
@@ -193,7 +193,7 @@
             background: var(--accent-color);
             border-radius: 50%;
             box-shadow: 0 0 10px rgba(255, 94, 151, 0.5);
-            animation: fall 1.5s linear forwards;
+            animation: fall 2.5s linear forwards;
         }
 
         @keyframes fall {
