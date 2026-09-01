@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TUH Early Pass</title>
     
-    <!-- Firebase App & Database SDK -->
+    <!-- Firebase App & Database SDK (v8 compat agar simpel) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -76,18 +76,12 @@
             filter: drop-shadow(0 4px 10px rgba(233, 85, 0, 0.3));
         }
 
-        .logo-wrapper.small {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 10px;
-        }
-
         #main-menu, #result-screen, #leaderboard-modal {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(8px);
-            z-index: 50;
+            z-index: 9999 !important; /* Memastikan layar di atas canvas */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -110,13 +104,16 @@
             font-size: 16px;
             font-weight: 800;
             border-radius: 25px;
-            cursor: pointer;
+            cursor: pointer !important;
+            pointer-events: auto !important;
             box-shadow: 0 8px 15px rgba(233, 85, 0, 0.3);
             transition: transform 0.1s;
             margin: 8px 0;
             width: 80%;
             max-width: 250px;
             text-align: center;
+            position: relative;
+            z-index: 10000 !important;
         }
 
         .btn:active { transform: scale(0.95); }
@@ -256,6 +253,7 @@
             text-align: center;
             background: #f8f8fc;
             margin-bottom: 15px;
+            pointer-events: auto !important;
         }
 
         #username-input:focus {
@@ -275,8 +273,8 @@
         <div class="logo-wrapper">
             <img src="logo.png" alt="Logo Game" onerror="this.style.display='none'">
         </div>
-        <button class="btn" onclick="startGame()">PLAY GAME</button>
-        <button class="btn" style="background:#eee; color:#555;" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
+        <button id="play-btn" class="btn" onclick="startGame()">PLAY GAME</button>
+        <button id="leaderboard-btn" class="btn" style="background:#eee; color:#555;" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
     </div>
 
     <!-- 2. GAME PLAY SCREEN -->
@@ -319,7 +317,7 @@
         <div class="result-box" style="max-width: 400px; max-height: 80vh;">
             <h2 style="margin: 0 0 15px 0; color: var(--accent-color);">LEADERBOARD</h2>
             <div id="leaderboard-list" style="width:100%; max-height:250px; overflow-y:auto; margin-bottom: 15px; text-align: left; padding-right: 5px;">
-                <p style="text-align:center;">Loading...</p>
+                <p style="text-align:center;">Memuat data...</p>
             </div>
             <button class="btn" onclick="toggleLeaderboard(false)">KEMBALI</button>
         </div>
@@ -328,27 +326,28 @@
 </div>
 
 <script>
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// ==========================================
+// 1. INISIALISASI FIREBASE
+// ==========================================
 const firebaseConfig = {
-  apiKey: "AIzaSyD2LJ3NNzgEN7YlyjAFka9Go1l0bqEIIHU",
-  authDomain: "tuh-ep.firebaseapp.com",
-  databaseURL: "https://tuh-ep-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "tuh-ep",
-  storageBucket: "tuh-ep.firebasestorage.app",
-  messagingSenderId: "589222410670",
-  appId: "1:589222410670:web:33ae142faf41093024b03f",
-  measurementId: "G-7W5FXE0597"
+    apiKey: "AIzaSyD2LJ3NNzgEN7YlyjAFka9Go1l0bqEIIHU",
+    authDomain: "tuh-ep.firebaseapp.com",
+    databaseURL: "https://tuh-ep-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "tuh-ep",
+    storageBucket: "tuh-ep.firebasestorage.app",
+    messagingSenderId: "589222410670",
+    appId: "1:589222410670:web:33ae142faf41093024b03f",
+    measurementId: "G-7W5FXE0597"
 };
-    
-<script>
+
+// Jalankan Inisialisasi
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+// ==========================================
+// 2. VARIABEL GLOBAL GAME
+// ==========================================
 let score = 0;
 let combo = 0;
 let isPlaying = false;
@@ -360,43 +359,45 @@ let missCount = 0;
 const bgm = document.getElementById('bgm');
 
 let beatmapData = [
-  { timestamp: 500, lane: 0 }, { timestamp: 800, lane: 1 }, { timestamp: 1100, lane: 2 }, { timestamp: 1400, lane: 3 },
-  { timestamp: 2000, lane: 1 }, { timestamp: 2300, lane: 2 }, { timestamp: 2600, lane: 0 }, { timestamp: 2900, lane: 3 },
-  { timestamp: 3500, lane: 0 }, { timestamp: 3800, lane: 1 }, { timestamp: 4100, lane: 2 }, { timestamp: 4400, lane: 3 },
-  { timestamp: 5000, lane: 2 }, { timestamp: 5300, lane: 1 }, { timestamp: 5900, lane: 0 }, { timestamp: 6200, lane: 2 },
-  { timestamp: 6500, lane: 1 }, { timestamp: 6800, lane: 3 }, { timestamp: 7400, lane: 0 }, { timestamp: 7700, lane: 3 },
-  { timestamp: 8300, lane: 1 }, { timestamp: 8600, lane: 2 }, { timestamp: 8900, lane: 1 }, { timestamp: 9200, lane: 2 },
-  { timestamp: 9800, lane: 0 }, { timestamp: 10100, lane: 3 }, { timestamp: 10400, lane: 1 }, { timestamp: 10700, lane: 2 },
-  { timestamp: 11000, lane: 0 }, { timestamp: 11600, lane: 1 }, { timestamp: 11900, lane: 3 }, { timestamp: 12200, lane: 2 },
-  { timestamp: 12500, lane: 0 }, { timestamp: 13100, lane: 1 }, { timestamp: 13400, lane: 2 }, { timestamp: 13700, lane: 3 },
-  { timestamp: 14300, lane: 0 }, { timestamp: 14600, lane: 1 }, { timestamp: 14900, lane: 2 }, { timestamp: 15200, lane: 3 },
-  { timestamp: 15800, lane: 2 }, { timestamp: 16100, lane: 1 }, { timestamp: 16400, lane: 0 }, { timestamp: 17000, lane: 3 },
-  { timestamp: 17300, lane: 2 }, { timestamp: 17600, lane: 1 }, { timestamp: 18200, lane: 0 }, { timestamp: 18500, lane: 1 },
-  { timestamp: 18800, lane: 2 }, { timestamp: 19100, lane: 3 }, { timestamp: 19700, lane: 2 }, { timestamp: 20000, lane: 1 },
-  { timestamp: 20300, lane: 0 }, { timestamp: 20900, lane: 1 }, { timestamp: 21200, lane: 2 }, { timestamp: 21500, lane: 3 },
-  { timestamp: 22100, lane: 0 }, { timestamp: 22400, lane: 2 }, { timestamp: 22700, lane: 1 }, { timestamp: 23000, lane: 3 },
-  { timestamp: 23600, lane: 0 }, { timestamp: 23900, lane: 1 }, { timestamp: 24200, lane: 2 }, { timestamp: 24500, lane: 3 },
-  { timestamp: 25100, lane: 2 }, { timestamp: 25400, lane: 1 }, { timestamp: 25700, lane: 0 }, { timestamp: 26300, lane: 3 },
-  { timestamp: 26600, lane: 2 }, { timestamp: 26900, lane: 1 }, { timestamp: 27500, lane: 0 }, { timestamp: 27800, lane: 1 },
-  { timestamp: 28100, lane: 2 }, { timestamp: 28400, lane: 3 }, { timestamp: 29000, lane: 2 }, { timestamp: 29300, lane: 1 },
-  { timestamp: 29600, lane: 0 }, { timestamp: 30200, lane: 1 }, { timestamp: 30500, lane: 2 }, { timestamp: 30800, lane: 3 },
-  { timestamp: 31400, lane: 0 }, { timestamp: 31700, lane: 2 }, { timestamp: 32000, lane: 1 }, { timestamp: 32300, lane: 3 },
-  { timestamp: 32900, lane: 0 }, { timestamp: 33200, lane: 1 }, { timestamp: 33500, lane: 2 }, { timestamp: 33800, lane: 3 },
-  { timestamp: 34400, lane: 2 }, { timestamp: 34700, lane: 1 }, { timestamp: 35000, lane: 0 }, { timestamp: 35600, lane: 3 },
-  { timestamp: 35900, lane: 2 }, { timestamp: 36200, lane: 1 }, { timestamp: 36800, lane: 0 }, { timestamp: 37100, lane: 1 },
-  { timestamp: 37400, lane: 2 }, { timestamp: 37700, lane: 3 }, { timestamp: 38300, lane: 2 }, { timestamp: 38600, lane: 1 },
-  { timestamp: 38900, lane: 0 }, { timestamp: 39500, lane: 1 }, { timestamp: 39800, lane: 2 }, { timestamp: 40100, lane: 3 },
-  { timestamp: 40700, lane: 0 }, { timestamp: 41000, lane: 2 }, { timestamp: 41300, lane: 1 }, { timestamp: 41600, lane: 3 },
-  { timestamp: 42200, lane: 0 }, { timestamp: 42500, lane: 1 }, { timestamp: 42800, lane: 2 }, { timestamp: 43100, lane: 3 },
-  { timestamp: 43700, lane: 2 }, { timestamp: 44000, lane: 1 }, { timestamp: 44300, lane: 0 }, { timestamp: 44900, lane: 3 },
-  { timestamp: 45200, lane: 2 }, { timestamp: 45500, lane: 1 }, { timestamp: 46100, lane: 0 }, { timestamp: 46400, lane: 1 },
-  { timestamp: 46700, lane: 2 }, { timestamp: 47000, lane: 3 }, { timestamp: 47600, lane: 2 }, { timestamp: 47900, lane: 1 },
-  { timestamp: 48200, lane: 0 }, { timestamp: 48800, lane: 1 }, { timestamp: 49100, lane: 2 }, { timestamp: 49400, lane: 3 },
-  { timestamp: 50000, lane: 0 }, { timestamp: 50500, lane: 1 }, { timestamp: 51000, lane: 2 }
+    { timestamp: 500, lane: 0 }, { timestamp: 800, lane: 1 }, { timestamp: 1100, lane: 2 }, { timestamp: 1400, lane: 3 },
+    { timestamp: 2000, lane: 1 }, { timestamp: 2300, lane: 2 }, { timestamp: 2600, lane: 0 }, { timestamp: 2900, lane: 3 },
+    { timestamp: 3500, lane: 0 }, { timestamp: 3800, lane: 1 }, { timestamp: 4100, lane: 2 }, { timestamp: 4400, lane: 3 },
+    { timestamp: 5000, lane: 2 }, { timestamp: 5300, lane: 1 }, { timestamp: 5900, lane: 0 }, { timestamp: 6200, lane: 2 },
+    { timestamp: 6500, lane: 1 }, { timestamp: 6800, lane: 3 }, { timestamp: 7400, lane: 0 }, { timestamp: 7700, lane: 3 },
+    { timestamp: 8300, lane: 1 }, { timestamp: 8600, lane: 2 }, { timestamp: 8900, lane: 1 }, { timestamp: 9200, lane: 2 },
+    { timestamp: 9800, lane: 0 }, { timestamp: 10100, lane: 3 }, { timestamp: 10400, lane: 1 }, { timestamp: 10700, lane: 2 },
+    { timestamp: 11000, lane: 0 }, { timestamp: 11600, lane: 1 }, { timestamp: 11900, lane: 3 }, { timestamp: 12200, lane: 2 },
+    { timestamp: 12500, lane: 0 }, { timestamp: 13100, lane: 1 }, { timestamp: 13400, lane: 2 }, { timestamp: 13700, lane: 3 },
+    { timestamp: 14300, lane: 0 }, { timestamp: 14600, lane: 1 }, { timestamp: 14900, lane: 2 }, { timestamp: 15200, lane: 3 },
+    { timestamp: 15800, lane: 2 }, { timestamp: 16100, lane: 1 }, { timestamp: 16400, lane: 0 }, { timestamp: 17000, lane: 3 },
+    { timestamp: 17300, lane: 2 }, { timestamp: 17600, lane: 1 }, { timestamp: 18200, lane: 0 }, { timestamp: 18500, lane: 1 },
+    { timestamp: 18800, lane: 2 }, { timestamp: 19100, lane: 3 }, { timestamp: 19700, lane: 2 }, { timestamp: 20000, lane: 1 },
+    { timestamp: 20300, lane: 0 }, { timestamp: 20900, lane: 1 }, { timestamp: 21200, lane: 2 }, { timestamp: 21500, lane: 3 },
+    { timestamp: 22100, lane: 0 }, { timestamp: 22400, lane: 2 }, { timestamp: 22700, lane: 1 }, { timestamp: 23000, lane: 3 },
+    { timestamp: 23600, lane: 0 }, { timestamp: 23900, lane: 1 }, { timestamp: 24200, lane: 2 }, { timestamp: 24500, lane: 3 },
+    { timestamp: 25100, lane: 2 }, { timestamp: 25400, lane: 1 }, { timestamp: 25700, lane: 0 }, { timestamp: 26300, lane: 3 },
+    { timestamp: 26600, lane: 2 }, { timestamp: 26900, lane: 1 }, { timestamp: 27500, lane: 0 }, { timestamp: 27800, lane: 1 },
+    { timestamp: 28100, lane: 2 }, { timestamp: 28400, lane: 3 }, { timestamp: 29000, lane: 2 }, { timestamp: 29300, lane: 1 },
+    { timestamp: 29600, lane: 0 }, { timestamp: 30200, lane: 1 }, { timestamp: 30500, lane: 2 }, { timestamp: 30800, lane: 3 },
+    { timestamp: 31400, lane: 0 }, { timestamp: 31700, lane: 2 }, { timestamp: 32000, lane: 1 }, { timestamp: 32300, lane: 3 },
+    { timestamp: 32900, lane: 0 }, { timestamp: 33200, lane: 1 }, { timestamp: 33500, lane: 2 }, { timestamp: 33800, lane: 3 },
+    { timestamp: 34400, lane: 2 }, { timestamp: 34700, lane: 1 }, { timestamp: 35000, lane: 0 }, { timestamp: 35600, lane: 3 },
+    { timestamp: 35900, lane: 2 }, { timestamp: 36200, lane: 1 }, { timestamp: 36800, lane: 0 }, { timestamp: 37100, lane: 1 },
+    { timestamp: 37400, lane: 2 }, { timestamp: 37700, lane: 3 }, { timestamp: 38300, lane: 2 }, { timestamp: 38600, lane: 1 },
+    { timestamp: 38900, lane: 0 }, { timestamp: 39500, lane: 1 }, { timestamp: 39800, lane: 2 }, { timestamp: 40100, lane: 3 },
+    { timestamp: 40700, lane: 0 }, { timestamp: 41000, lane: 2 }, { timestamp: 41300, lane: 1 }, { timestamp: 41600, lane: 3 },
+    { timestamp: 42200, lane: 0 }, { timestamp: 42500, lane: 1 }, { timestamp: 42800, lane: 2 }, { timestamp: 43100, lane: 3 },
+    { timestamp: 43700, lane: 2 }, { timestamp: 44000, lane: 1 }, { timestamp: 44300, lane: 0 }, { timestamp: 44900, lane: 3 },
+    { timestamp: 45200, lane: 2 }, { timestamp: 45500, lane: 1 }, { timestamp: 46100, lane: 0 }, { timestamp: 46400, lane: 1 },
+    { timestamp: 46700, lane: 2 }, { timestamp: 47000, lane: 3 }, { timestamp: 47600, lane: 2 }, { timestamp: 47900, lane: 1 },
+    { timestamp: 48200, lane: 0 }, { timestamp: 48800, lane: 1 }, { timestamp: 49100, lane: 2 }, { timestamp: 49400, lane: 3 },
+    { timestamp: 50000, lane: 0 }, { timestamp: 50500, lane: 1 }, { timestamp: 51000, lane: 2 }
 ];
 
+// ==========================================
+// 3. FUNGSI LOGIKA GAME
+// ==========================================
 function startGame() {
-    // Sembunyikan semua menu & modal secara mutlak agar tidak ada yang menutupi klik
     const mainMenu = document.getElementById('main-menu');
     const resultScreen = document.getElementById('result-screen');
     const leaderboardModal = document.getElementById('leaderboard-modal');
@@ -452,6 +453,7 @@ function startGame() {
         }
     }, 50);
 }
+
 function spawnNoteDOM(laneIndex) {
     const lanes = document.querySelectorAll('.lane');
     if (!lanes[laneIndex]) return;
@@ -557,7 +559,9 @@ function endGame(status) {
     const titleEl = document.getElementById('result-title');
     if (status === 'congrats') {
         titleEl.innerText = "CONGRATS!";
-    } 
+    } else {
+        titleEl.innerText = "GAME OVER";
+    }
 
     document.getElementById('res-score').innerText = score.toLocaleString();
     document.getElementById('res-perfect').innerText = perfectCount;
@@ -570,6 +574,9 @@ function endGame(status) {
     document.getElementById('result-screen').style.display = 'flex';
 }
 
+// ==========================================
+// 4. FIREBASE SAVE & FETCH LEADERBOARD
+// ==========================================
 function saveScoreAndExit() {
     const inputEl = document.getElementById('username-input');
     const username = (inputEl && inputEl.value.trim() !== "") ? inputEl.value.trim() : "Player";
@@ -583,17 +590,15 @@ function saveScoreAndExit() {
         timestamp: Date.now()
     };
 
-    // Langsung kirim murni ke Firebase Realtime Database
     try {
         firebase.database().ref('leaderboard').push(scoreData)
             .then(() => {
-                // Berhasil kirim -> Tutup layar hasil, buka leaderboard
                 document.getElementById('result-screen').style.display = 'none';
                 toggleLeaderboard(true);
             })
             .catch((err) => {
                 console.error("Gagal menyimpan skor ke Firebase:", err);
-                alert("Gagal menyimpan skor ke server global. Periksa koneksi internet/Firebase.");
+                alert("Gagal menyimpan skor. Cek Rules/Koneksi Firebase.");
                 document.getElementById('result-screen').style.display = 'none';
                 document.getElementById('main-menu').style.display = 'flex';
             });
@@ -603,7 +608,7 @@ function saveScoreAndExit() {
         document.getElementById('main-menu').style.display = 'flex';
     }
 }
-    
+
 function toggleLeaderboard(show) {
     const modal = document.getElementById('leaderboard-modal');
     const mainMenu = document.getElementById('main-menu');
@@ -611,85 +616,52 @@ function toggleLeaderboard(show) {
     if (show) {
         if (mainMenu) mainMenu.style.display = 'none';
         if (modal) modal.style.display = 'flex';
-
-        const listEl = document.getElementById('leaderboard-list');
-        if (listEl) {
-            listEl.innerHTML = "<p style='text-align:center;'>Memuat data global...</p>";
-        }
-
-        try {
-            firebase.database().ref('leaderboard').once('value', (snapshot) => {
-                let dataArr = [];
-                snapshot.forEach(child => { 
-                    dataArr.push(child.val()); 
-                });
-
-                let html = "";
-                dataArr.sort((a, b) => b.score - a.score);
-
-                if (dataArr.length === 0) {
-                    html = "<p style='text-align:center;'>Belum ada skor global tersimpan.</p>";
-                } else {
-                    dataArr.forEach((item, index) => {
-                        html += `
-                            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
-                                <span>#${index+1} <b>${item.username}</b></span>
-                                <span style="color:var(--accent-color); font-weight:bold;">${item.score.toLocaleString()}</span>
-                            </div>
-                        `;
-                    });
-                }
-                if (listEl) listEl.innerHTML = html;
-            }, (error) => {
-                if (listEl) listEl.innerHTML = "<p style='text-align:center; color:red;'>Gagal memuat leaderboard global.</p>";
-            });
-        } catch(e) {
-            if (listEl) listEl.innerHTML = "<p style='text-align:center; color:red;'>Terjadi kesalahan koneksi.</p>";
-        }
+        fetchGlobalScores();
     } else {
         if (modal) modal.style.display = 'none';
         if (mainMenu) mainMenu.style.display = 'flex';
     }
 }
-    // Fungsi ini yang bertugas MENAMPILKAN data di layar Leaderboard
+
 function fetchGlobalScores() {
     const listEl = document.getElementById('leaderboard-list');
     if (!listEl) return;
 
-    listEl.innerHTML = '<li>Memuat data global...</li>';
+    listEl.innerHTML = "<p style='text-align:center;'>Memuat data global...</p>";
 
-    // Ambil data node 'leaderboard' lalu urutkan berdasarkan 'score'
-    firebase.database().ref('leaderboard').orderByChild('score').limitToLast(10)
-        .once('value', (snapshot) => {
-            listEl.innerHTML = '';
-            const scores = [];
-
-            snapshot.forEach((child) => {
-                scores.push(child.val());
+    try {
+        firebase.database().ref('leaderboard').once('value', (snapshot) => {
+            let dataArr = [];
+            snapshot.forEach(child => { 
+                dataArr.push(child.val()); 
             });
 
-            // Urutkan skor terbesar ke terkecil
-            scores.sort((a, b) => b.score - a.score);
+            dataArr.sort((a, b) => b.score - a.score);
 
-            if (scores.length === 0) {
-                listEl.innerHTML = '<li>Belum ada data skor global.</li>';
+            if (dataArr.length === 0) {
+                listEl.innerHTML = "<p style='text-align:center;'>Belum ada skor global tersimpan.</p>";
                 return;
             }
 
-            // Tampilkan ke daftar
-            scores.forEach((item, index) => {
-                const li = document.createElement('li');
-                // Pakai item.username dan item.score sesuai dengan saveScoreAndExit kamu
-                li.innerHTML = `#${index + 1} <b>${item.username || 'Player'}</b>: ${item.score || 0} pts`;
-                listEl.appendChild(li);
+            let html = "";
+            dataArr.slice(0, 10).forEach((item, index) => {
+                html += `
+                    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee; font-size:14px;">
+                        <span>#${index+1} <b>${item.username || 'Player'}</b></span>
+                        <span style="color:var(--accent-color); font-weight:bold;">${(item.score || 0).toLocaleString()}</span>
+                    </div>
+                `;
             });
-        })
-        .catch((err) => {
-            console.error("Gagal ambil skor:", err);
-            listEl.innerHTML = '<li>Gagal memuat data global.</li>';
+            listEl.innerHTML = html;
+        }, (error) => {
+            console.error("Firebase fetch error:", error);
+            listEl.innerHTML = "<p style='text-align:center; color:red;'>Gagal memuat leaderboard global.</p>";
         });
+    } catch(e) {
+        console.error("Exception:", e);
+        listEl.innerHTML = "<p style='text-align:center; color:red;'>Terjadi kesalahan koneksi.</p>";
+    }
 }
-    
 </script>
 </body>
 </html>
