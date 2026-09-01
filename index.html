@@ -396,10 +396,16 @@ let beatmapData = [
 ];
 
 function startGame() {
-    document.getElementById('main-menu').style.display = 'none';
-    document.getElementById('result-screen').style.display = 'none';
-    document.getElementById('leaderboard-modal').style.display = 'none';
-    document.getElementById('game-screen').style.display = 'block';
+    // Sembunyikan semua menu & modal secara mutlak agar tidak ada yang menutupi klik
+    const mainMenu = document.getElementById('main-menu');
+    const resultScreen = document.getElementById('result-screen');
+    const leaderboardModal = document.getElementById('leaderboard-modal');
+    const gameScreen = document.getElementById('game-screen');
+
+    if (mainMenu) mainMenu.style.display = 'none';
+    if (resultScreen) resultScreen.style.display = 'none';
+    if (leaderboardModal) leaderboardModal.style.display = 'none';
+    if (gameScreen) gameScreen.style.display = 'block';
     
     score = 0;
     combo = 0;
@@ -446,7 +452,6 @@ function startGame() {
         }
     }, 50);
 }
-
 function spawnNoteDOM(laneIndex) {
     const lanes = document.querySelectorAll('.lane');
     if (!lanes[laneIndex]) return;
@@ -578,66 +583,72 @@ function saveScoreAndExit() {
         timestamp: Date.now()
     };
 
-    // Simpan juga ke localStorage sebagai cadangan
-    let localLeaderboard = JSON.parse(localStorage.getItem('tuh_leaderboard') || '[]');
-    localLeaderboard.push(scoreData);
-    localStorage.setItem('tuh_leaderboard', JSON.stringify(localLeaderboard));
-
+    // Langsung kirim murni ke Firebase Realtime Database
     try {
-        firebase.database().ref('leaderboard').push(scoreData).then(() => {
-            document.getElementById('result-screen').style.display = 'none';
-            toggleLeaderboard(true);
-        }).catch((err) => {
-            console.warn("Firebase save failed, using local:", err);
-            document.getElementById('result-screen').style.display = 'none';
-            toggleLeaderboard(true);
-        });
+        firebase.database().ref('leaderboard').push(scoreData)
+            .then(() => {
+                // Berhasil kirim -> Tutup layar hasil, buka leaderboard
+                document.getElementById('result-screen').style.display = 'none';
+                toggleLeaderboard(true);
+            })
+            .catch((err) => {
+                console.error("Gagal menyimpan skor ke Firebase:", err);
+                alert("Gagal menyimpan skor ke server global. Periksa koneksi internet/Firebase.");
+                document.getElementById('result-screen').style.display = 'none';
+                document.getElementById('main-menu').style.display = 'flex';
+            });
     } catch(e) {
+        console.error("Error Firebase:", e);
         document.getElementById('result-screen').style.display = 'none';
-        toggleLeaderboard(true);
+        document.getElementById('main-menu').style.display = 'flex';
     }
 }
-
+    
 function toggleLeaderboard(show) {
     const modal = document.getElementById('leaderboard-modal');
     const mainMenu = document.getElementById('main-menu');
     
     if (show) {
-        mainMenu.style.display = 'none';
-        modal.style.display = 'flex';
+        if (mainMenu) mainMenu.style.display = 'none';
+        if (modal) modal.style.display = 'flex';
 
         const listEl = document.getElementById('leaderboard-list');
-        listEl.innerHTML = "<p style='text-align:center;'>Memuat data global...</p>";
+        if (listEl) {
+            listEl.innerHTML = "<p style='text-align:center;'>Memuat data global...</p>";
+        }
 
-        // Gunakan .once() agar koneksi tidak tersangkut terus-menerus
-        firebase.database().ref('leaderboard').once('value', (snapshot) => {
-            let dataArr = [];
-            snapshot.forEach(child => { 
-                dataArr.push(child.val()); 
-            });
-
-            let html = "";
-            dataArr.sort((a, b) => b.score - a.score);
-
-            if (dataArr.length === 0) {
-                html = "<p style='text-align:center;'>Belum ada skor global tersimpan.</p>";
-            } else {
-                dataArr.forEach((item, index) => {
-                    html += `
-                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
-                            <span>#${index+1} <b>${item.username}</b></span>
-                            <span style="color:var(--accent-color); font-weight:bold;">${item.score.toLocaleString()}</span>
-                        </div>
-                    `;
+        try {
+            firebase.database().ref('leaderboard').once('value', (snapshot) => {
+                let dataArr = [];
+                snapshot.forEach(child => { 
+                    dataArr.push(child.val()); 
                 });
-            }
-            listEl.innerHTML = html;
-        }, (error) => {
-            listEl.innerHTML = "<p style='text-align:center; color:red;'>Gagal memuat leaderboard global.</p>";
-        });
+
+                let html = "";
+                dataArr.sort((a, b) => b.score - a.score);
+
+                if (dataArr.length === 0) {
+                    html = "<p style='text-align:center;'>Belum ada skor global tersimpan.</p>";
+                } else {
+                    dataArr.forEach((item, index) => {
+                        html += `
+                            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
+                                <span>#${index+1} <b>${item.username}</b></span>
+                                <span style="color:var(--accent-color); font-weight:bold;">${item.score.toLocaleString()}</span>
+                            </div>
+                        `;
+                    });
+                }
+                if (listEl) listEl.innerHTML = html;
+            }, (error) => {
+                if (listEl) listEl.innerHTML = "<p style='text-align:center; color:red;'>Gagal memuat leaderboard global.</p>";
+            });
+        } catch(e) {
+            if (listEl) listEl.innerHTML = "<p style='text-align:center; color:red;'>Terjadi kesalahan koneksi.</p>";
+        }
     } else {
-        modal.style.display = 'none';
-        mainMenu.style.display = 'flex';
+        if (modal) modal.style.display = 'none';
+        if (mainMenu) mainMenu.style.display = 'flex';
     }
 }
     
