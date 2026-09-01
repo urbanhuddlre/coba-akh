@@ -11,12 +11,12 @@
 
     <style>
         @font-face {
-    font-family: 'Hillos';
-    src: url('hillos.otf') format('opentype'); /* Sesuaikan dengan nama file & ekstensi asli */
+    font-family: 'Hillios';
+    src: url('Hillios.otf') format('opentype'); /* Sesuaikan dengan nama file & ekstensi asli */
 }
 
 h1 {
-    font-family: 'Hillos', sans-serif !important;
+    font-family: 'Hillios', sans-serif !important;
 }
         :root {
             --accent-color: #e95500;
@@ -124,8 +124,8 @@ h1 {
 
         .btn:active { transform: scale(0.95); }
 
-        /* HUD */
-        .hud {
+        /*  */
+        . {
             position: absolute;
             top: 20px; left: 20px; right: 20px;
             display: flex;
@@ -286,7 +286,7 @@ h1 {
         <div class="logo-wrapper">
             <img src="logo.png" alt="Logo Game" class="logo.png">
         </div>
-        <h1 style="font-family: 'Hillos', sans-serif; color: var(--accent-color); font-size: 36px; margin-bottom: 25px; margin-top: 0;">TUH EP</h1>
+        <h1 style="font-family: 'Hillios', sans-serif; color: var(--accent-color); font-size: 36px; margin-bottom: 25px; margin-top: 0;">TUH Eearly Pass</h1>
         <button class="btn" onclick="startGame()">PLAY GAME</button>
         <button class="btn" style="background:#eee; color:#555;" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
     </div>
@@ -294,9 +294,10 @@ h1 {
     <!-- 2. GAME PLAY SCREEN -->
     <div id="game-screen">
         <div class="hud">
-            <div>SCORE: <span id="score">0</span></div>
-            <div>COMBO: <span id="combo">0</span></div>
-        </div>
+    <div>SCORE: <span id="score">0</span></div>
+    <button id="pause-btn" onclick="togglePause()" style="background:none; border:2px solid var(--accent-color); color:var(--accent-color); padding:2px 10px; border-radius:12px; font-weight:800; cursor:pointer; font-size:12px;">PAUSE</button>
+    <div>COMBO: <span id="combo">0</span></div>
+</div>
 
         <div id="judgment-text">PERFECT</div>
 
@@ -342,10 +343,10 @@ h1 {
         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyD8sLyanphP9Y2ZY8MWmDpsBBOcCegMW08",
-  authDomain: "urbanhudlde.firebaseapp.com",
-  databaseURL: "https://urbanhudlde-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "urbanhudlde",
-  storageBucket: "urbanhudlde.firebasestorage.app",
+  authDomain: "urbanlde.firebaseapp.com",
+  databaseURL: "https://urbanlde-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "urbanlde",
+  storageBucket: "urbanlde.firebasestorage.app",
   messagingSenderId: "992493553966",
   appId: "1:992493553966:web:7440d47c1797356c8092bf",
   measurementId: "G-K3NS4CWZHR"
@@ -421,13 +422,16 @@ function startGame() {
     beatmapData.forEach(n => n.spawned = false);
 
     isPlaying = true;
-    updateHUD();
+    update();
 
     bgm.currentTime = 0;
     bgm.play().catch(() => {});
 
     if (gameInterval) clearInterval(gameInterval);
     const startTime = Date.now();
+    
+    window.pausedElapsedTime = 0;
+const startTime = Date.now();
 
     gameInterval = setInterval(() => {
         if (!isPlaying) return;
@@ -458,6 +462,50 @@ document.querySelectorAll('.note').forEach(noteEl => {
     }, 50);
 }
 
+let isPaused = false;
+
+function togglePause() {
+    if (!isPlaying) return;
+    
+    isPaused = !isPaused;
+    const pauseBtn = document.getElementById('pause-btn');
+
+    if (isPaused) {
+        clearInterval(gameInterval);
+        if (bgm) bgm.pause();
+        if (pauseBtn) pauseBtn.innerText = "RESUME";
+    } else {
+        if (bgm) bgm.play().catch(() => {});
+        if (pauseBtn) pauseBtn.innerText = "PAUSE";
+        
+        // Melanjutkan interval permainan
+        const startTime = Date.now() - window.pausedElapsedTime;
+        gameInterval = setInterval(() => {
+            if (!isPlaying || isPaused) return;
+            const elapsedTime = Date.now() - startTime;
+            
+            beatmapData.forEach(note => {
+                if (!note.spawned && elapsedTime >= note.timestamp) {
+                    spawnNoteDOM(note.lane);
+                    note.spawned = true;
+                }
+            });
+
+            document.querySelectorAll('.note').forEach(noteEl => {
+                const rect = noteEl.getBoundingClientRect();
+                if (rect.top > window.innerHeight - 50) {
+                    noteEl.remove();
+                    triggerJudgment('MISS');
+                }
+            });
+
+            if (elapsedTime >= 53000) {
+                endGame();
+            }
+        }, 50);
+    }
+}
+        
 function spawnNoteDOM(laneIndex) {
     const lanes = document.querySelectorAll('.lane');
     if (!lanes[laneIndex]) return;
@@ -550,10 +598,10 @@ function triggerJudgment(type) {
         }
     }
 
-    updateHUD();
+    update();
 }
 
-function updateHUD() {
+function update() {
     const scoreEl = document.getElementById('score');
     const comboEl = document.getElementById('combo');
     if (scoreEl) scoreEl.innerText = score.toLocaleString();
