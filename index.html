@@ -184,6 +184,14 @@
             color: white;
         }
 
+        .heart-key.active-press {
+            background: var(--accent-color) !important;
+            color: white !important;
+            transform: translateX(-50%) scale(1.15) !important;
+            box-shadow: 0 0 20px var(--accent-color) !important;
+            transition: transform 0.05s ease, background 0.05s ease;
+        }
+        
         /* NOTE ANIMATION */
         .note {
             position: absolute;
@@ -325,10 +333,10 @@
 
 </div>
 
-<script>
 const firebaseConfig = {
   apiKey: "AIzaSyD8sLyanphP9Y2ZY8MWmDpsBBOcCegMW08",
   authDomain: "urbanhudlde.firebaseapp.com",
+  databaseURL: "https://urbanhudlde-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "urbanhudlde",
   storageBucket: "urbanhudlde.firebasestorage.app",
   messagingSenderId: "992493553966",
@@ -422,14 +430,14 @@ function startGame() {
             }
         });
 
-        // Cek Note yang lolos lewat bawah (AUTO MISS)
-        document.querySelectorAll('.note').forEach(noteEl => {
-            const rect = noteEl.getBoundingClientRect();
-            if (rect.top > window.innerHeight - 70) {
-                noteEl.remove();
-                triggerJudgment('MISS');
-            }
-        });
+       // 1. Bagian saat note terlewat sampai bawah layar (di dalam gameInterval)
+document.querySelectorAll('.note').forEach(noteEl => {
+    const rect = noteEl.getBoundingClientRect();
+    if (rect.top > window.innerHeight - 50) {
+        noteEl.remove();
+        triggerJudgment('MISS'); // Tetap menghitung miss saat note terlewat
+    }
+});
 
         // Selesai Musik
         if (elapsedTime >= 53000) {
@@ -454,12 +462,19 @@ function hitLane(laneIndex) {
     const currentLane = lanes[laneIndex];
     if (!currentLane) return;
 
+    // Berikan efek visual klik pada heart-key di lane tersebut
+    const heartKey = currentLane.querySelector('.heart-key');
+    if (heartKey) {
+        heartKey.classList.add('active-press');
+        setTimeout(() => {
+            heartKey.classList.remove('active-press');
+        }, 100);
+    }
+
     const activeNotes = currentLane.querySelectorAll('.note');
     if (activeNotes.length === 0) return;
 
-    // Ambil note terendah yang paling mendekati garis bawah
     const targetNote = activeNotes[0];
-    const heartKey = currentLane.querySelector('.heart-key');
     if (!targetNote || !heartKey) return;
 
     const noteRect = targetNote.getBoundingClientRect();
@@ -469,8 +484,7 @@ function hitLane(laneIndex) {
     const heartCenter = heartRect.top + (heartRect.height / 2);
     const distance = Math.abs(noteCenter - heartCenter);
 
-    // Validasi area pukul agar tidak terlalu sensitif (toleransi jarak 65px)
-    if (distance <= 65) {
+    if (distance <= 45) {
         targetNote.remove();
         triggerJudgment('HIT');
     }
@@ -499,7 +513,9 @@ function triggerJudgment(type) {
         combo = 0;
         missCount++;
 
-        if (missCount >= 5) {
+        // Ubah angka 15 di bawah ini untuk memperbanyak toleransi miss sebelum game over
+        // (Semakin besar angkanya, semakin tidak mudah game over)
+        if (missCount >= 15) {
             endGame();
             return;
         }
