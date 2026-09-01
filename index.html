@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TUH Early Pass</title>
+    <title>TUH EP</title>
     
-    <!-- Firebase App & Database SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -24,6 +23,7 @@ h1 {
             --text-color: #adc642;
             --lane-color: #ffee9b;
         }
+
 
         * {
             box-sizing: border-box;
@@ -46,7 +46,6 @@ h1 {
             align-items: center;
         }
 
-        /* LAYAR UTAMA FULLSCREEN & KONTROL LEBAR */
         #game-container {
             width: 100vw;
             height: 100vh;
@@ -60,7 +59,6 @@ h1 {
             overflow: hidden;
         }
 
-        /* LOGO WRAPPER (DIJAMIN TIDAK MEMBESAR) */
         .logo-wrapper {
             width: 130px;
             height: 130px;
@@ -74,7 +72,7 @@ h1 {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            filter: drop-shadow(0 4px 10px rgba(198, 227, 75, 0.3));
+            filter: drop-shadow(0 4px 10px rgba(255, 94, 151, 0.3));
         }
 
         .logo-wrapper.small {
@@ -83,7 +81,6 @@ h1 {
             margin-bottom: 10px;
         }
 
-        /* UI SCREENS */
         #main-menu, #result-screen, #leaderboard-modal {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -104,7 +101,6 @@ h1 {
             position: relative;
         }
 
-        /* BUTTONS & UI */
         .btn {
             background: var(--accent-color);
             color: white;
@@ -114,7 +110,7 @@ h1 {
             font-weight: 800;
             border-radius: 25px;
             cursor: pointer;
-            box-shadow: 0 8px 15px rgba(198, 227, 75, 0.3);
+            box-shadow: 0 8px 15px rgba(255, 94, 151, 0.3);
             transition: transform 0.1s;
             margin: 8px 0;
             width: 80%;
@@ -124,20 +120,20 @@ h1 {
 
         .btn:active { transform: scale(0.95); }
 
-        /*  */
-        . {
+        .hud {
             position: absolute;
             top: 20px; left: 20px; right: 20px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
             font-weight: 800;
-            font-size: 18px;
+            font-size: 16px;
             z-index: 10;
         }
 
         #judgment-text {
             position: absolute;
-            top: 40%; left: 50%;
+            top: 35%; left: 50%;
             transform: translate(-50%, -50%);
             font-size: 32px;
             font-weight: 900;
@@ -147,7 +143,6 @@ h1 {
             pointer-events: none;
         }
 
-        /* GAME PLAY AREA */
         .track-container {
             display: flex;
             width: 100%;
@@ -167,7 +162,7 @@ h1 {
 
         .heart-key {
             position: absolute;
-            bottom: 120px; /* Diubah dari 40px menjadi lebih tinggi agar naik ke atas */
+            bottom: 120px;
             left: 50%;
             transform: translateX(-50%);
             width: 50px;
@@ -182,7 +177,7 @@ h1 {
             background: white;
             box-shadow: 0 4px 10px rgba(255, 94, 151, 0.2);
         }
-        
+
         .heart-key:active {
             background: var(--accent-color);
             color: white;
@@ -193,10 +188,8 @@ h1 {
             color: white !important;
             transform: translateX(-50%) scale(1.15) !important;
             box-shadow: 0 0 20px var(--accent-color) !important;
-            transition: transform 0.05s ease, background 0.05s ease;
         }
-        
-        /* NOTE ANIMATION */
+
         .note {
             position: absolute;
             width: 36px;
@@ -213,16 +206,18 @@ h1 {
             100% { top: 100%; }
         }
 
-        /* RESULT SCREEN UI */
         .result-box {
             background: #ffffff;
             border: 2px solid #f0f0f5;
-            padding: 30px 24px;
+            padding: 25px 20px;
             border-radius: 30px;
             width: 85%;
             max-width: 360px;
             text-align: center;
             box-shadow: 0 20px 40px rgba(255, 94, 151, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .score-big {
@@ -235,6 +230,7 @@ h1 {
             display: flex;
             justify-content: space-between;
             gap: 8px;
+            width: 100%;
             margin-bottom: 20px;
         }
 
@@ -278,15 +274,13 @@ h1 {
 
 <div id="game-container">
 
-    <!-- AUDIO BGM -->
     <audio id="bgm" src="music.mp3" preload="auto"></audio>
 
     <!-- 1. MAIN MENU -->
     <div id="main-menu">
         <div class="logo-wrapper">
-            <img src="logo.png" alt="Logo Game" class="logo.png">
+            <img src="logo.png" alt="Logo" onerror="this.parentElement.style.display='none'">
         </div>
-        <h1 style="font-family: 'Hillios', sans-serif; color: var(--accent-color); font-size: 36px; margin-bottom: 25px; margin-top: 0;">TUH Early Pass</h1>
         <button class="btn" onclick="startGame()">PLAY GAME</button>
         <button class="btn" style="background:#eee; color:#555;" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
     </div>
@@ -294,9 +288,9 @@ h1 {
     <!-- 2. GAME PLAY SCREEN -->
     <div id="game-screen">
         <div class="hud">
-    <div>SCORE: <span id="score">0</span></div>
-    <div>COMBO: <span id="combo">0</span></div>
-</div>
+            <div>SCORE: <span id="score">0</span></div>
+            <div>COMBO: <span id="combo">0</span></div>
+        </div>
 
         <div id="judgment-text">PERFECT</div>
 
@@ -311,6 +305,9 @@ h1 {
     <!-- 3. RESULT SCREEN (GAME OVER) -->
     <div id="result-screen" style="display: none;">
         <div class="result-box">
+            <div class="logo-wrapper small">
+                <img src="logo.png" alt="Logo" onerror="this.parentElement.style.display='none'">
+            </div>
             <h2 style="margin: 0; color: var(--accent-color);">GAME OVER</h2>
             <div style="font-size: 12px; font-weight:800; color:#888; margin-top:10px;">TOTAL SCORE</div>
             <div id="res-score" class="score-big">0</div>
@@ -326,7 +323,7 @@ h1 {
         </div>
     </div>
 
-    <!-- 4. LEADERBOARD MODAL -->
+    -- 4. LEADERBOARD MODAL -->
     <div id="leaderboard-modal" style="display: none;">
         <div class="result-box" style="max-width: 400px; max-height: 80vh;">
             <h2 style="margin: 0 0 15px 0; color: var(--accent-color);">LEADERBOARD</h2>
@@ -337,7 +334,7 @@ h1 {
         </div>
     </div>
 
-    <script>
+<script>
         // 2. Letakkan konfigurasi Firebase di bagian paling atas blok script game
         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
@@ -356,7 +353,6 @@ const firebaseConfig = {
             try { firebase.initializeApp(firebaseConfig); } catch(e) {}
         }
 
-// --- VARIABEL GAME ---
 let score = 0;
 let combo = 0;
 let isPlaying = false;
@@ -367,7 +363,6 @@ let missCount = 0;
 
 const bgm = document.getElementById('bgm');
 
-// --- DATA BEATMAP (52 DETIK) ---
 let beatmapData = [
   { timestamp: 500, lane: 0 }, { timestamp: 800, lane: 1 }, { timestamp: 1100, lane: 2 }, { timestamp: 1400, lane: 3 },
   { timestamp: 2000, lane: 1 }, { timestamp: 2300, lane: 2 }, { timestamp: 2600, lane: 0 }, { timestamp: 2900, lane: 3 },
@@ -404,7 +399,6 @@ let beatmapData = [
   { timestamp: 50000, lane: 0 }, { timestamp: 50500, lane: 1 }, { timestamp: 51000, lane: 2 }
 ];
 
-// --- MULAI PERMAINAN ---
 function startGame() {
     document.getElementById('main-menu').style.display = 'none';
     document.getElementById('result-screen').style.display = 'none';
@@ -456,50 +450,7 @@ function startGame() {
         }
     }, 50);
 }
-        // 1. Bagian saat note terlewat sampai bawah layar (di dalam gameInterval)
-document.querySelectorAll('.note').forEach(noteEl => {
-    const rect = noteEl.getBoundingClientRect();
-    if (rect.top > window.innerHeight - 50) {
-        noteEl.remove();
-        triggerJudgment('MISS'); // Tetap menghitung miss saat note terlewat
-    }
-});
 
-        // Selesai Musik
-        if (elapsedTime >= 53000) {
-            endGame();
-        }
-    }, 50);
-}
-            document.querySelectorAll('.note').forEach(noteEl => {
-                const rect = noteEl.getBoundingClientRect();
-                if (rect.top > window.innerHeight - 50) {
-                    noteEl.remove();
-                    triggerJudgment('MISS');
-                }
-            });
-
-            if (elapsedTime >= 53000) {
-                endGame();
-            }
-        }, 50);
-    }
-}
-            document.querySelectorAll('.note').forEach(noteEl => {
-                const rect = noteEl.getBoundingClientRect();
-                if (rect.top > window.innerHeight - 50) {
-                    noteEl.remove();
-                    triggerJudgment('MISS');
-                }
-            });
-
-            if (elapsedTime >= 53000) {
-                endGame();
-            }
-        }, 50);
-    }
-}
-        
 function spawnNoteDOM(laneIndex) {
     const lanes = document.querySelectorAll('.lane');
     if (!lanes[laneIndex]) return;
@@ -516,7 +467,6 @@ function hitLane(laneIndex) {
     const currentLane = lanes[laneIndex];
     if (!currentLane) return;
 
-    // Berikan efek visual klik pada heart-key
     const heartKey = currentLane.querySelector('.heart-key');
     if (heartKey) {
         heartKey.classList.add('active-press');
@@ -538,27 +488,21 @@ function hitLane(laneIndex) {
     const heartCenter = heartRect.top + (heartRect.height / 2);
     const distance = Math.abs(noteCenter - heartCenter);
 
-    // KATEGORI PENILAIAN JARAK
     if (distance <= 30) {
-        // Pas di tengah (Sangat Akurat)
         targetNote.remove();
         triggerJudgment('PERFECT');
     } else if (distance <= 65) {
-        // Agak mendekati tapi masih sah (Good)
         targetNote.remove();
         triggerJudgment('GOOD');
-    } else {
-        // Terlalu jauh tapi dipencet (dianggap miss atau diabaikan? 
-        // Biarkan lolos atau hitung miss jika mau, tapi standar rythm game biasanya cukup abaikan atau miss)
     }
 }
 
 function triggerJudgment(type) {
     const el = document.getElementById('judgment-text');
     
-   if (type === 'PERFECT') {
+    if (type === 'PERFECT') {
         if (el) {
-            el.innerText = 'PERFECT'; // Diubah dari '100' menjadi 'PERFECT'
+            el.innerText = 'PERFECT';
             el.style.color = '#ff5e97';
             el.style.opacity = '1';
             setTimeout(() => { el.style.opacity = '0'; }, 200);
@@ -569,13 +513,13 @@ function triggerJudgment(type) {
     } else if (type === 'GOOD') {
         if (el) {
             el.innerText = 'GOOD';
-            el.style.color = '#ffb800'; // Warna kuning/oranye untuk Good
+            el.style.color = '#ffb800';
             el.style.opacity = '1';
             setTimeout(() => { el.style.opacity = '0'; }, 200);
         }
-        score += 50; // Skor untuk Good (bisa diubah sesuai keinginan, misal 50 atau tetap 100)
+        score += 100;
         combo++;
-        goodCount++; // <-- Ini sekarang akan bertambah!
+        goodCount++;
     } else {
         if (el) {
             el.innerText = 'MISS';
@@ -592,21 +536,20 @@ function triggerJudgment(type) {
         }
     }
 
-    update();
+    updateHUD();
 }
 
-function update() {
+function updateHUD() {
     const scoreEl = document.getElementById('score');
     const comboEl = document.getElementById('combo');
     if (scoreEl) scoreEl.innerText = score.toLocaleString();
     if (comboEl) comboEl.innerText = combo;
 }
 
-// --- LAYAR RESULT / GAME OVER ---
 function endGame() {
     isPlaying = false;
     clearInterval(gameInterval);
-    bgm.pause();
+    if (bgm) bgm.pause();
 
     document.getElementById('game-screen').style.display = 'none';
     
@@ -621,7 +564,6 @@ function endGame() {
     document.getElementById('result-screen').style.display = 'flex';
 }
 
-// --- SIMPAN SKOR KE FIREBASE ---
 function saveScoreAndExit() {
     const inputEl = document.getElementById('username-input');
     const username = (inputEl && inputEl.value.trim() !== "") ? inputEl.value.trim() : "Player";
@@ -647,19 +589,13 @@ function saveScoreAndExit() {
     }
 }
 
-
-// --- LEADERBOARD MODAL TOGGLE ---
 function toggleLeaderboard(show) {
     const modal = document.getElementById('leaderboard-modal');
-    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('main-menu').style.display = show ? 'none' : 'flex';
     modal.style.display = show ? 'flex' : 'none';
 
-    if (!show) {
-        document.getElementById('main-menu').style.display = 'flex';
-        return;
-    }
+    if (!show) return;
 
-    // Ambil Data Leaderboard dari Firebase
     const listEl = document.getElementById('leaderboard-list');
     listEl.innerHTML = "<p style='text-align:center;'>Loading...</p>";
 
@@ -668,14 +604,14 @@ function toggleLeaderboard(show) {
             let html = "";
             let dataArr = [];
             snapshot.forEach(child => { dataArr.push(child.val()); });
-            dataArr.reverse(); // Urutkan skor tertinggi
+            dataArr.reverse();
 
             if (dataArr.length === 0) {
                 html = "<p style='text-align:center;'>Belum ada skor tersimpan.</p>";
             } else {
                 dataArr.forEach((item, index) => {
                     html += `
-                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
+                        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
                             <span>#${index+1} <b>${item.username}</b></span>
                             <span style="color:var(--accent-color); font-weight:bold;">${item.score.toLocaleString()}</span>
                         </div>
