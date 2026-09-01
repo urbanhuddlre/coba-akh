@@ -594,16 +594,21 @@ function toggleLeaderboard(show) {
     listEl.innerHTML = "<p style='text-align:center;'>Loading...</p>";
 
     try {
-        firebase.database().ref('leaderboard').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+        firebase.database().ref('leaderboard').once('value', (snapshot) => {
             let html = "";
             let dataArr = [];
-            snapshot.forEach(child => { dataArr.push(child.val()); });
-            dataArr.reverse();
+            
+            snapshot.forEach(child => { 
+                dataArr.push(child.val()); 
+            });
+
+            // Urutkan manual menggunakan JavaScript untuk menghindari masalah .orderByChild()
+            dataArr.sort((a, b) => b.score - a.score);
 
             if (dataArr.length === 0) {
                 html = "<p style='text-align:center;'>Belum ada skor tersimpan.</p>";
             } else {
-                dataArr.forEach((item, index) => {
+                dataArr.slice(0, 10).forEach((item, index) => {
                     html += `
                         <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
                             <span>#${index+1} <b>${item.username}</b></span>
@@ -613,9 +618,13 @@ function toggleLeaderboard(show) {
                 });
             }
             listEl.innerHTML = html;
+        }, (error) => {
+            console.error("Firebase Error:", error);
+            listEl.innerHTML = `<p style='text-align:center; color:red;'>Gagal: ${error.message}</p>`;
         });
     } catch(e) {
-        listEl.innerHTML = "<p style='text-align:center;'>Gagal memuat leaderboard.</p>";
+        console.error("Catch Error:", e);
+        listEl.innerHTML = "<p style='text-align:center; color:red;'>Gagal memuat leaderboard.</p>";
     }
 }
 </script>
