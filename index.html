@@ -436,7 +436,8 @@ function startGame() {
 
     if (gameInterval) clearInterval(gameInterval);
     const startTime = Date.now();
-
+    window.pausedElapsedTime = 0;
+const startTime = Date.now();
     gameInterval = setInterval(() => {
         if (!isPlaying || isPaused) return;
 
@@ -494,7 +495,6 @@ function togglePause() {
         if (bgm) bgm.play().catch(() => {});
         if (pauseBtn) pauseBtn.innerText = "PAUSE";
         
-        // Melanjutkan interval permainan
         const startTime = Date.now() - window.pausedElapsedTime;
         gameInterval = setInterval(() => {
             if (!isPlaying || isPaused) return;
@@ -507,6 +507,20 @@ function togglePause() {
                 }
             });
 
+            document.querySelectorAll('.note').forEach(noteEl => {
+                const rect = noteEl.getBoundingClientRect();
+                if (rect.top > window.innerHeight - 50) {
+                    noteEl.remove();
+                    triggerJudgment('MISS');
+                }
+            });
+
+            if (elapsedTime >= 53000) {
+                endGame();
+            }
+        }, 50);
+    }
+}
             document.querySelectorAll('.note').forEach(noteEl => {
                 const rect = noteEl.getBoundingClientRect();
                 if (rect.top > window.innerHeight - 50) {
