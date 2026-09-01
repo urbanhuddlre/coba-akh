@@ -295,7 +295,6 @@ h1 {
     <div id="game-screen">
         <div class="hud">
     <div>SCORE: <span id="score">0</span></div>
-    <button id="pause-btn" onclick="togglePause()" style="background:none; border:2px solid var(--accent-color); color:var(--accent-color); padding:2px 10px; border-radius:12px; font-weight:800; cursor:pointer; font-size:12px;">PAUSE</button>
     <div>COMBO: <span id="combo">0</span></div>
 </div>
 
@@ -361,12 +360,10 @@ const firebaseConfig = {
 let score = 0;
 let combo = 0;
 let isPlaying = false;
-let isPaused = false; // Pastikan variabel ini ada di sini
 let gameInterval = null;
 let perfectCount = 0;
 let goodCount = 0;
 let missCount = 0;
-window.pausedElapsedTime = 0;
 
 const bgm = document.getElementById('bgm');
 
@@ -411,6 +408,7 @@ let beatmapData = [
 function startGame() {
     document.getElementById('main-menu').style.display = 'none';
     document.getElementById('result-screen').style.display = 'none';
+    document.getElementById('leaderboard-modal').style.display = 'none';
     document.getElementById('game-screen').style.display = 'block';
     
     score = 0;
@@ -418,10 +416,6 @@ function startGame() {
     perfectCount = 0;
     goodCount = 0;
     missCount = 0;
-    isPaused = false; // Reset status pause saat game baru mulai
-
-    const pauseBtn = document.getElementById('pause-btn');
-    if (pauseBtn) pauseBtn.innerText = "PAUSE";
     
     document.querySelectorAll('.note').forEach(n => n.remove());
     beatmapData.forEach(n => n.spawned = false);
@@ -436,10 +430,9 @@ function startGame() {
 
     if (gameInterval) clearInterval(gameInterval);
     const startTime = Date.now();
-    window.pausedElapsedTime = 0;
-const startTime = Date.now();
+
     gameInterval = setInterval(() => {
-        if (!isPlaying || isPaused) return;
+        if (!isPlaying) return;
 
         const elapsedTime = Date.now() - startTime;
 
@@ -463,7 +456,7 @@ const startTime = Date.now();
         }
     }, 50);
 }
-       // 1. Bagian saat note terlewat sampai bawah layar (di dalam gameInterval)
+        // 1. Bagian saat note terlewat sampai bawah layar (di dalam gameInterval)
 document.querySelectorAll('.note').forEach(noteEl => {
     const rect = noteEl.getBoundingClientRect();
     if (rect.top > window.innerHeight - 50) {
@@ -478,35 +471,6 @@ document.querySelectorAll('.note').forEach(noteEl => {
         }
     }, 50);
 }
-
-let isPaused = false;
-
-function togglePause() {
-    if (!isPlaying) return;
-    
-    isPaused = !isPaused;
-    const pauseBtn = document.getElementById('pause-btn');
-
-    if (isPaused) {
-        clearInterval(gameInterval);
-        if (bgm) bgm.pause();
-        if (pauseBtn) pauseBtn.innerText = "RESUME";
-    } else {
-        if (bgm) bgm.play().catch(() => {});
-        if (pauseBtn) pauseBtn.innerText = "PAUSE";
-        
-        const startTime = Date.now() - window.pausedElapsedTime;
-        gameInterval = setInterval(() => {
-            if (!isPlaying || isPaused) return;
-            const elapsedTime = Date.now() - startTime;
-            
-            beatmapData.forEach(note => {
-                if (!note.spawned && elapsedTime >= note.timestamp) {
-                    spawnNoteDOM(note.lane);
-                    note.spawned = true;
-                }
-            });
-
             document.querySelectorAll('.note').forEach(noteEl => {
                 const rect = noteEl.getBoundingClientRect();
                 if (rect.top > window.innerHeight - 50) {
