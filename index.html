@@ -651,6 +651,44 @@ function toggleLeaderboard(show) {
         if (mainMenu) mainMenu.style.display = 'flex';
     }
 }
+    // Fungsi ini yang bertugas MENAMPILKAN data di layar Leaderboard
+function fetchGlobalScores() {
+    const listEl = document.getElementById('leaderboard-list');
+    if (!listEl) return;
+
+    listEl.innerHTML = '<li>Memuat data global...</li>';
+
+    // Ambil data node 'leaderboard' lalu urutkan berdasarkan 'score'
+    firebase.database().ref('leaderboard').orderByChild('score').limitToLast(10)
+        .once('value', (snapshot) => {
+            listEl.innerHTML = '';
+            const scores = [];
+
+            snapshot.forEach((child) => {
+                scores.push(child.val());
+            });
+
+            // Urutkan skor terbesar ke terkecil
+            scores.sort((a, b) => b.score - a.score);
+
+            if (scores.length === 0) {
+                listEl.innerHTML = '<li>Belum ada data skor global.</li>';
+                return;
+            }
+
+            // Tampilkan ke daftar
+            scores.forEach((item, index) => {
+                const li = document.createElement('li');
+                // Pakai item.username dan item.score sesuai dengan saveScoreAndExit kamu
+                li.innerHTML = `#${index + 1} <b>${item.username || 'Player'}</b>: ${item.score || 0} pts`;
+                listEl.appendChild(li);
+            });
+        })
+        .catch((err) => {
+            console.error("Gagal ambil skor:", err);
+            listEl.innerHTML = '<li>Gagal memuat data global.</li>';
+        });
+}
     
 </script>
 </body>
