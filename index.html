@@ -447,7 +447,6 @@ function spawnNoteDOM(laneIndex) {
     lanes[laneIndex].appendChild(noteEl);
 }
 
-// --- AKURASI DAN SENTUHAN TOMBOL ---
 function hitLane(laneIndex) {
     if (!isPlaying) return;
 
@@ -456,15 +455,11 @@ function hitLane(laneIndex) {
     if (!currentLane) return;
 
     const activeNotes = currentLane.querySelectorAll('.note');
+    if (activeNotes.length === 0) return;
 
-    if (activeNotes.length === 0) {
-        triggerJudgment('MISS');
-        return;
-    }
-
+    // Ambil note terendah yang paling mendekati garis bawah
     const targetNote = activeNotes[0];
     const heartKey = currentLane.querySelector('.heart-key');
-
     if (!targetNote || !heartKey) return;
 
     const noteRect = targetNote.getBoundingClientRect();
@@ -474,43 +469,36 @@ function hitLane(laneIndex) {
     const heartCenter = heartRect.top + (heartRect.height / 2);
     const distance = Math.abs(noteCenter - heartCenter);
 
-    if (distance <= 50) {
+    // Validasi area pukul agar tidak terlalu sensitif (toleransi jarak 65px)
+    if (distance <= 65) {
         targetNote.remove();
-        triggerJudgment('PERFECT');
-    } else if (distance <= 100) {
-        targetNote.remove();
-        triggerJudgment('GOOD');
-    } else {
-        targetNote.remove();
-        triggerJudgment('MISS');
+        triggerJudgment('HIT');
     }
 }
 
-// --- SISTEM PENILAIAN & BATAS 5 MISS ---
 function triggerJudgment(type) {
     const el = document.getElementById('judgment-text');
-    if (el) {
-        el.innerText = type;
-        el.style.opacity = '1';
-        setTimeout(() => { el.style.opacity = '0'; }, 300);
-    }
     
-    if (type === 'PERFECT') {
-        if (el) el.style.color = '#ff5e97';
-        score += 1000;
+    if (type === 'HIT') {
+        if (el) {
+            el.innerText = '100';
+            el.style.color = '#ff5e97';
+            el.style.opacity = '1';
+            setTimeout(() => { el.style.opacity = '0'; }, 200);
+        }
+        score += 100;
         combo++;
         perfectCount++;
-    } else if (type === 'GOOD') {
-        if (el) el.style.color = '#ffb800';
-        score += 500;
-        combo++;
-        goodCount++;
-    } else { // MISS
-        if (el) el.style.color = '#888888';
+    } else {
+        if (el) {
+            el.innerText = 'MISS';
+            el.style.color = '#888888';
+            el.style.opacity = '1';
+            setTimeout(() => { el.style.opacity = '0'; }, 200);
+        }
         combo = 0;
         missCount++;
 
-        // BATAS MAX MISS = 5
         if (missCount >= 5) {
             endGame();
             return;
