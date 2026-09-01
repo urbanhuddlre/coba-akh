@@ -324,14 +324,14 @@
 
     <!-- 4. LEADERBOARD MODAL -->
     <div id="leaderboard-modal" style="display: none;">
-        <h2>LEADERBOARD</h2>
-        <div id="leaderboard-list" style="width:100%; max-height:300px; overflow-y:auto; margin: 20px 0;">
-            <p style="text-align:center;">Loading...</p>
+        <div class="result-box" style="max-width: 400px; max-height: 80vh;">
+            <h2 style="margin: 0 0 15px 0; color: var(--accent-color);">LEADERBOARD</h2>
+            <div id="leaderboard-list" style="width:100%; max-height:250px; overflow-y:auto; margin-bottom: 15px; text-align: left; padding-right: 5px;">
+                <p style="text-align:center;">Loading...</p>
+            </div>
+            <button class="btn" onclick="toggleLeaderboard(false)">KEMBALI</button>
         </div>
-        <button class="btn" onclick="toggleLeaderboard(false)">KEMBALI</button>
     </div>
-
-</div>
 
     <script>
         // 2. Letakkan konfigurasi Firebase di bagian paling atas blok script game
@@ -510,10 +510,10 @@ function hitLane(laneIndex) {
 function triggerJudgment(type) {
     const el = document.getElementById('judgment-text');
     
-    if (type === 'PERFECT') {
+   if (type === 'PERFECT') {
         if (el) {
-            el.innerText = '100';
-            el.style.color = '#ff5e97'; // Warna pink aksen
+            el.innerText = 'PERFECT'; // Diubah dari '100' menjadi 'PERFECT'
+            el.style.color = '#ff5e97';
             el.style.opacity = '1';
             setTimeout(() => { el.style.opacity = '0'; }, 200);
         }
