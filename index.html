@@ -611,61 +611,37 @@ function toggleLeaderboard(show) {
     if (!show) return;
 
     const listEl = document.getElementById('leaderboard-list');
-    listEl.innerHTML = "<p style='text-align:center;'>Loading...</p>";
+    listEl.innerHTML = "<p style='text-align:center;'>Memuat data global...</p>";
 
-    try {
-        firebase.database().ref('leaderboard').once('value', (snapshot) => {
-            let dataArr = [];
-            snapshot.forEach(child => { dataArr.push(child.val()); });
-
-            if (dataArr.length === 0) {
-                dataArr = JSON.parse(localStorage.getItem('tuh_leaderboard') || '[]');
-            }
-
-            let html = "";
-            // Urutkan dari skor tertinggi ke terendah (Global Leaderboard)
-            dataArr.sort((a, b) => b.score - a.score);
-
-            if (dataArr.length === 0) {
-                html = "<p style='text-align:center;'>Belum ada skor tersimpan.</p>";
-            } else {
-                // Menampilkan seluruh pemain global (tanpa .slice(0, 10) agar semua bisa lihat)
-                dataArr.forEach((item, index) => {
-                    html += `
-                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
-                            <span>#${index+1} <b>${item.username}</b></span>
-                            <span style="color:var(--accent-color); font-weight:bold;">${item.score.toLocaleString()}</span>
-                        </div>
-                    `;
-                });
-            }
-            listEl.innerHTML = html;
-        }, (error) => {
-            let dataArr = JSON.parse(localStorage.getItem('tuh_leaderboard') || '[]');
-            renderLeaderboardList(dataArr, listEl);
+    // Mengambil data secara langsung dari server Firebase Database
+    firebase.database().ref('leaderboard').on('value', (snapshot) => {
+        let dataArr = [];
+        
+        snapshot.forEach(child => { 
+            dataArr.push(child.val()); 
         });
-    } catch(e) {
-        let dataArr = JSON.parse(localStorage.getItem('tuh_leaderboard') || '[]');
-        renderLeaderboardList(dataArr, listEl);
-    }
-}
-function renderLeaderboardList(dataArr, listEl) {
-    let html = "";
-    dataArr.sort((a, b) => b.score - a.score);
 
-    if (dataArr.length === 0) {
-        html = "<p style='text-align:center;'>Belum ada skor tersimpan.</p>";
-    } else {
-        dataArr.slice(0, 10).forEach((item, index) => {
-            html += `
-                <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
-                    <span>#${index+1} <b>${item.username}</b></span>
-                    <span style="color:var(--accent-color); font-weight:bold;">${item.score.toLocaleString()}</span>
-                </div>
-            `;
-        });
-    }
-    listEl.innerHTML = html;
+        let html = "";
+        // Urutkan dari skor tertinggi ke terendah secara global
+        dataArr.sort((a, b) => b.score - a.score);
+
+        if (dataArr.length === 0) {
+            html = "<p style='text-align:center;'>Belum ada skor global tersimpan.</p>";
+        } else {
+            dataArr.forEach((item, index) => {
+                html += `
+                    <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
+                        <span>#${index+1} <b>${item.username}</b></span>
+                        <span style="color:var(--accent-color); font-weight:bold;">${item.score.toLocaleString()}</span>
+                    </div>
+                `;
+            });
+        }
+        listEl.innerHTML = html;
+    }, (error) => {
+        console.error("Gagal sinkronisasi global:", error);
+        listEl.innerHTML = "<p style='text-align:center; color:red;'>Gagal memuat leaderboard global dari server.</p>";
+    });
 }
     
 </script>
