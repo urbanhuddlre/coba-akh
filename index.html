@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TUH EP</title>
+    <title>TUH Early Pass</title>
     
     <!-- Firebase App & Database SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -12,7 +12,11 @@
     <style>
         @font-face {
     font-family: 'Hillos';
-    src: url('hillos.otf'); /* Ganti menjadi hillios.otf jika formatnya OTF */
+    src: url('hillos.otf') format('opentype'); /* Sesuaikan dengan nama file & ekstensi asli */
+}
+
+h1 {
+    font-family: 'Hillos', sans-serif !important;
 }
         :root {
             --accent-color: #e95500;
@@ -70,7 +74,7 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            filter: drop-shadow(0 4px 10px rgba(173, 198, 66, 1));
+            filter: drop-shadow(0 4px 10px rgba(198, 227, 75, 0.3));
         }
 
         .logo-wrapper.small {
@@ -110,7 +114,7 @@
             font-weight: 800;
             border-radius: 25px;
             cursor: pointer;
-            box-shadow: 0 8px 15px rgba(173, 198, 66, 1);
+            box-shadow: 0 8px 15px rgba(198, 227, 75, 0.3);
             transition: transform 0.1s;
             margin: 8px 0;
             width: 80%;
