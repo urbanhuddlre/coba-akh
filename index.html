@@ -11,8 +11,8 @@
 
     <style>
         @font-face {
-    font-family: 'Hillios';
-    src: url('hillios.otf'); /* Ganti menjadi hillios.otf jika formatnya OTF */
+    font-family: 'Hillos';
+    src: url('hillos.otf'); /* Ganti menjadi hillios.otf jika formatnya OTF */
 }
         :root {
             --accent-color: #e95500;
@@ -282,7 +282,7 @@
         <div class="logo-wrapper">
             <img src="logo.png" alt="Logo Game" class="logo.png">
         </div>
-        <h1 style="font-family: 'Hillios', sans-serif; color: var(--accent-color); font-size: 36px; margin-bottom: 25px; margin-top: 0;">TUH EP</h1>
+        <h1 style="font-family: 'Hillos', sans-serif; color: var(--accent-color); font-size: 36px; margin-bottom: 25px; margin-top: 0;">TUH EP</h1>
         <button class="btn" onclick="startGame()">PLAY GAME</button>
         <button class="btn" style="background:#eee; color:#555;" onclick="toggleLeaderboard(true)">LEADERBOARD</button>
     </div>
@@ -332,17 +332,6 @@
     </div>
 
 </div>
-
-const firebaseConfig = {
-  apiKey: "AIzaSyD8sLyanphP9Y2ZY8MWmDpsBBOcCegMW08",
-  authDomain: "urbanhudlde.firebaseapp.com",
-  databaseURL: "https://urbanhudlde-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "urbanhudlde",
-  storageBucket: "urbanhudlde.firebasestorage.app",
-  messagingSenderId: "992493553966",
-  appId: "1:992493553966:web:7440d47c1797356c8092bf",
-  measurementId: "G-K3NS4CWZHR"
-};
 
 // --- VARIABEL GAME ---
 let score = 0;
@@ -462,7 +451,7 @@ function hitLane(laneIndex) {
     const currentLane = lanes[laneIndex];
     if (!currentLane) return;
 
-    // Berikan efek visual klik pada heart-key di lane tersebut
+    // Berikan efek visual klik pada heart-key
     const heartKey = currentLane.querySelector('.heart-key');
     if (heartKey) {
         heartKey.classList.add('active-press');
@@ -484,25 +473,44 @@ function hitLane(laneIndex) {
     const heartCenter = heartRect.top + (heartRect.height / 2);
     const distance = Math.abs(noteCenter - heartCenter);
 
-    if (distance <= 45) {
+    // KATEGORI PENILAIAN JARAK
+    if (distance <= 30) {
+        // Pas di tengah (Sangat Akurat)
         targetNote.remove();
-        triggerJudgment('HIT');
+        triggerJudgment('PERFECT');
+    } else if (distance <= 65) {
+        // Agak mendekati tapi masih sah (Good)
+        targetNote.remove();
+        triggerJudgment('GOOD');
+    } else {
+        // Terlalu jauh tapi dipencet (dianggap miss atau diabaikan? 
+        // Biarkan lolos atau hitung miss jika mau, tapi standar rythm game biasanya cukup abaikan atau miss)
     }
 }
 
 function triggerJudgment(type) {
     const el = document.getElementById('judgment-text');
     
-    if (type === 'HIT') {
+    if (type === 'PERFECT') {
         if (el) {
             el.innerText = '100';
-            el.style.color = '#ff5e97';
+            el.style.color = '#ff5e97'; // Warna pink aksen
             el.style.opacity = '1';
             setTimeout(() => { el.style.opacity = '0'; }, 200);
         }
         score += 100;
         combo++;
         perfectCount++;
+    } else if (type === 'GOOD') {
+        if (el) {
+            el.innerText = 'GOOD';
+            el.style.color = '#ffb800'; // Warna kuning/oranye untuk Good
+            el.style.opacity = '1';
+            setTimeout(() => { el.style.opacity = '0'; }, 200);
+        }
+        score += 50; // Skor untuk Good (bisa diubah sesuai keinginan, misal 50 atau tetap 100)
+        combo++;
+        goodCount++; // <-- Ini sekarang akan bertambah!
     } else {
         if (el) {
             el.innerText = 'MISS';
@@ -513,9 +521,7 @@ function triggerJudgment(type) {
         combo = 0;
         missCount++;
 
-        // Ubah angka 15 di bawah ini untuk memperbanyak toleransi miss sebelum game over
-        // (Semakin besar angkanya, semakin tidak mudah game over)
-        if (missCount >= 20) {
+        if (missCount >= 15) {
             endGame();
             return;
         }
@@ -575,6 +581,25 @@ function saveScoreAndExit() {
         document.getElementById('main-menu').style.display = 'flex';
     }
 }
+
+<script>
+        // 2. Letakkan konfigurasi Firebase di bagian paling atas blok script game
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyD8sLyanphP9Y2ZY8MWmDpsBBOcCegMW08",
+  authDomain: "urbanhudlde.firebaseapp.com",
+  databaseURL: "https://urbanhudlde-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "urbanhudlde",
+  storageBucket: "urbanhudlde.firebasestorage.app",
+  messagingSenderId: "992493553966",
+  appId: "1:992493553966:web:7440d47c1797356c8092bf",
+  measurementId: "G-K3NS4CWZHR"
+};
+        
+        // Inisialisasi Firebase
+        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+            try { firebase.initializeApp(firebaseConfig); } catch(e) {}
+        }
 
 // --- LEADERBOARD MODAL TOGGLE ---
 function toggleLeaderboard(show) {
