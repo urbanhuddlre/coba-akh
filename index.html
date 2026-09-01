@@ -600,43 +600,45 @@ function saveScoreAndExit() {
 
 function toggleLeaderboard(show) {
     const modal = document.getElementById('leaderboard-modal');
-    document.getElementById('main-menu').style.display = show ? 'none' : 'flex';
-    modal.style.display = show ? 'flex' : 'none';
+    const mainMenu = document.getElementById('main-menu');
+    
+    if (show) {
+        mainMenu.style.display = 'none';
+        modal.style.display = 'flex';
 
-    if (!show) return;
+        const listEl = document.getElementById('leaderboard-list');
+        listEl.innerHTML = "<p style='text-align:center;'>Memuat data global...</p>";
 
-    const listEl = document.getElementById('leaderboard-list');
-    listEl.innerHTML = "<p style='text-align:center;'>Memuat data global...</p>";
-
-    // Mengambil data secara langsung dari server Firebase Database
-    firebase.database().ref('leaderboard').on('value', (snapshot) => {
-        let dataArr = [];
-        
-        snapshot.forEach(child => { 
-            dataArr.push(child.val()); 
-        });
-
-        let html = "";
-        // Urutkan dari skor tertinggi ke terendah secara global
-        dataArr.sort((a, b) => b.score - a.score);
-
-        if (dataArr.length === 0) {
-            html = "<p style='text-align:center;'>Belum ada skor global tersimpan.</p>";
-        } else {
-            dataArr.forEach((item, index) => {
-                html += `
-                    <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
-                        <span>#${index+1} <b>${item.username}</b></span>
-                        <span style="color:var(--accent-color); font-weight:bold;">${item.score.toLocaleString()}</span>
-                    </div>
-                `;
+        // Gunakan .once() agar koneksi tidak tersangkut terus-menerus
+        firebase.database().ref('leaderboard').once('value', (snapshot) => {
+            let dataArr = [];
+            snapshot.forEach(child => { 
+                dataArr.push(child.val()); 
             });
-        }
-        listEl.innerHTML = html;
-    }, (error) => {
-        console.error("Gagal sinkronisasi global:", error);
-        listEl.innerHTML = "<p style='text-align:center; color:red;'>Gagal memuat leaderboard global dari server.</p>";
-    });
+
+            let html = "";
+            dataArr.sort((a, b) => b.score - a.score);
+
+            if (dataArr.length === 0) {
+                html = "<p style='text-align:center;'>Belum ada skor global tersimpan.</p>";
+            } else {
+                dataArr.forEach((item, index) => {
+                    html += `
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
+                            <span>#${index+1} <b>${item.username}</b></span>
+                            <span style="color:var(--accent-color); font-weight:bold;">${item.score.toLocaleString()}</span>
+                        </div>
+                    `;
+                });
+            }
+            listEl.innerHTML = html;
+        }, (error) => {
+            listEl.innerHTML = "<p style='text-align:center; color:red;'>Gagal memuat leaderboard global.</p>";
+        });
+    } else {
+        modal.style.display = 'none';
+        mainMenu.style.display = 'flex';
+    }
 }
     
 </script>
